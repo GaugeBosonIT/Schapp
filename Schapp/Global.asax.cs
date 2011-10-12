@@ -24,20 +24,17 @@ namespace Schapp
         public static void RegisterRoutes(RouteCollection routes)
         {
 
-            
-            
-
-
-
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             var config = new HttpConfiguration() { EnableTestClient = true };
-            routes.Add(new ServiceRoute("api/lists", new HttpServiceHostFactory() { Configuration = config }, typeof(ListsAPI)));
+
+            routes.Add( new ServiceRoute("api/lists", new HttpServiceHostFactory() { Configuration = config }, typeof(ListsAPI)));
 
             routes.MapRoute(
                 "Default", // Route name
                 "{controller}/{action}/{id}", // URL with parameters
-                new { controller = "Home", action = "Index", id = UrlParameter.Optional } // Parameter defaults
+                new { controller = "Home", action = "Index", id = UrlParameter.Optional }, // Parameter defaults
+                new { controller = "^(?!api/lists).*" }
             );
 
         }
