@@ -18,7 +18,7 @@ namespace Schapp.Models
             [XmlAttribute("status")]
             public int status { get; set; }
 
-            [XmlElement("LIST")]
+            [XmlElement("SList")]
             public SList l { get; set; }
 
         }
@@ -35,18 +35,28 @@ namespace Schapp.Models
             public string link { get; set; }
 
             [DataMember]
-            [XmlElement("ITEM")]
+            [XmlElement("Item")]
             public Item[] item { get; set; }
         }
-
+        [DataContract]
         [Serializable]
         public class Item
         {
+            [DataMember]
             [XmlAttribute("price")]
             public int price { get; set; }
 
+            [DataMember]
+            [XmlAttribute("name")]
+            public string name { get; set; }
+
+            [DataMember]
             [XmlAttribute("shop")]
             public string shop { get; set; }
+
+            [DataMember]
+            [XmlAttribute("quantity")]
+            public string quantity { get; set; }
 
         }
 
