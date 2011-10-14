@@ -20,117 +20,141 @@
     
     
     <script>
-      $(function(){
+      $(function ()
+      {
         window.SItem = Backbone.Model.extend({
-          defaults: function() {
+          defaults: function ()
+          {
             return {
-              name : 'New Item'
+              name: 'New Item'
             };
           }
         });
-        window.SItemList = Backbone.Collection.extend({model: SItem});
+        window.SItemList = Backbone.Collection.extend({ model: SItem });
 
         window.SList = Backbone.Model.extend({
-          initialize: function(){
+          initialize: function ()
+          {
             this.items = new SItemList;
-            this.items.url = '/api/items';
           }
-          ,url : function(){
+          , url: function ()
+          {
             var l = this.get('link');
-            return l?'/api/lists/'+l:'/api/lists';
+            return l ? '/api/lists/' + l : '/api/lists';
           }
-          ,isNew : function() {
+          , isNew: function ()
+          {
             return this.get('link') == null;
           }
-          ,defaults: function() {
+          , defaults: function ()
+          {
             return {
-              name : 'New List'
-              ,link : null
+              name: 'New List'
+              , link: null
             };
           }
         });
-         
-        
-        window.SListList = Backbone.Collection.extend({model: SList});
-        window.SLists = new SListList;
-        
+
         window.SListView = Backbone.View.extend({
-          tagName:  "li",className: "list"
-          ,template: _.template($('#list-template').html())
-          ,events: {
+          el: $("#slist")
+          , template: _.template($('#list-template').html())
+          , events: {
             "click .list-text": "edit"
           }
-          ,initialize: function() {
+          , initialize: function ()
+          {
             this.model.bind('change', this.render, this);
             this.model.bind('destroy', this.remove, this);
           }
-          ,render: function() {
-            $(this.el).html(this.template(this.model.toJSON()));
-            this.setText();
-            return this;
+          , render: function ()
+          {
+            var view = this;
+            if (!this.model.isNew()) {
+              $("#app-create-controls").fadeOut(200, function ()
+              {
+                $(view.el).html(view.template(view.model.toJSON()));
+                $(view.el).show();
+                view.setText();
+              });
+            } else {
+              $(this.el).hide();
+              $("#app-create-controls").fadeIn();
+            }
+            return null;
           }
-          ,setText: function() {
+          , setText: function ()
+          {
             var text = this.model.get('name');
             this.$('.list-text').text(text);
             this.input = this.$('.list-input');
             this.input.bind('blur', _.bind(this.close, this)).val(text);
           }
-          ,edit: function() {
+          , edit: function ()
+          {
             $(this.el).addClass("editing");
           }
-          ,close: function() {
-            this.model.save({name: this.input.val()});
+          , close: function ()
+          {
+            this.model.save({ name: this.input.val() });
             $(this.el).removeClass("editing");
           }
-          ,updateOnEnter: function(e) {
+          , updateOnEnter: function (e)
+          {
             if (e.keyCode == 13) this.close();
           }
         });
-          
-          
-          
+
+
         window.AppView = Backbone.View.extend({
           el: $("#approot")
-          ,events: {
-            "keypress #new-slist-name":  "createOnEnter",
-            "click .button":  "createOnClick",
+          , events: {
+            "keypress #new-slist-name": "createOnEnter"
+            , "click .button": "createOnClick"
           }
-          ,initialize: function() {
-            this.input  = this.$("#new-slist-name");
-            SLists.bind('add', this.addOne, this);
+          , initialize: function ()
+          {
+            this.input = this.$("#new-slist-name");
+            this.model = new SList;
+            this.view = new SListView({ model: this.model });
           }
-          ,addOne: function(slist) {
-            var slist = new SListView({model: slist}), _t = this;
-            $("#app-create-controls").fadeOut(200, function(){_t.$("#slists-list").append(slist.render().el);});
-          }
-          ,display:function(slist){
-            $("#app-create-controls").fadeIn();
-          }
-          ,createOnEnter: function(e) {
+          , createOnEnter: function (e)
+          {
             var text = this.input.val();
             if (!text || e.keyCode != 13) return;
-            SLists.create({name: text});
+            this.model.save({ name: text });
             this.input.val('');
           }
-          ,createOnClick: function(e) {
+          , createOnClick: function (e)
+          {
             var text = this.input.val();
             if (!text) return;
-            SLists.create({name: text});
+            this.model.save({ name: text });
             this.input.val('');
+          }
+          , reset: function (link)
+          {
+            if (link) {
+              this.model.set({ 'link': link }, { silent: true });
+              this.model.fetch();
+            } else {
+              this.model.clear();
+            }
           }
         });
         window.App = new AppView;
 
         ListRouter = Backbone.Router.extend({
-          routes :{"/":"resetView"
-                  ,"/:link" : "openList"
-                  ,"*other" : "resetView"
+          routes: { "/": "resetView"
+                  , "/:link": "openList"
+                  , "*other": "resetView"
           }
-          ,openList : function(link){
-            SLists.add(new SList({link:link}).fetch());
+          , openList: function (link)
+          {
+            App.reset(link)
           }
-          ,resetView : function(){
-            _.invoke(SLists.models, "remove");
+          , resetView: function ()
+          {
+            App.reset();
           }
         });
 
@@ -143,7 +167,7 @@
       .list-remove {padding: 1em; background-color:black;color:white;float:right}
       .list-back {float:right;cursor:pointer}
       .display {display:block;}
-      .edit {display:none;}
+      #app-create-controls, .edit {display:none;}
       .editing .display {display:none;}
       .editing .edit {display:block;}
     </style>
@@ -167,14 +191,14 @@
     
     <div id="approot" class="row">
       <div class="twelvecol" id="slists">
-          <ul id="slists-list"></ul>
+          <div id="slist"></div>
       </div>
       <div id="app-create-controls">
           <div class="fourcol fieldset">
             <input type="text" name="list-name" placeholder="list name" style="width:100%" id="new-slist-name" tabindex="1">
           </div>
           <div class="fourcol">
-              <div class="button active"><input type="button" name="start" value="New List" tabindex="3"></div>
+              <div class="button active"><input type="button" name="start" id="create-list" value="New List" tabindex="3"></div>
           </div>
       </div>
     </div>
