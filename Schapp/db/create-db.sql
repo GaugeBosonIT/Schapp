@@ -130,7 +130,7 @@ declare @name nvarchar(255),
 	
 	SELECT 
 	@name = @p.value('(SList/@name)[1]', 'nvarchar(255)'),
-	@link = @p.value('(SList/@list)[1]', 'nvarchar(255)')
+	@link = @p.value('(SList/@link)[1]', 'nvarchar(255)')
 
 		MERGE dbo.list AS target
 		USING (
@@ -160,7 +160,7 @@ declare @name nvarchar(255),
 		
 		
 		select @list = (
-						select @new_link as "@link",
+						select ISNULL(@new_link,@link) as "@link",
 								@name as "@name"
 								for xml path ('SList')
 						)
