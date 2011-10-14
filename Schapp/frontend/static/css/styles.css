@@ -1,0 +1,473 @@
+html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address,cite,code,del,dfn,em,img,ins,kbd,q,samp,small,strong,sub,sup,var,b,i,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,figcaption,figure,footer,header,hgroup,menu,nav,section,summary,time,mark,audio,video
+	{
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+
+article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section
+	{
+	display: block;
+}
+
+blockquote,q {
+	quotes: none;
+}
+
+blockquote:before,blockquote:after,q:before,q:after {
+	content: "";
+	content: none;
+}
+
+ins {
+	background-color: #ff9;
+	color: #000;
+	text-decoration: none;
+}
+
+mark {
+	background-color: #ff9;
+	color: #000;
+	font-style: italic;
+	font-weight: bold;
+}
+
+del {
+	text-decoration: line-through;
+}
+
+abbr[title],dfn[title] {
+	border-bottom: 1px dotted;
+	cursor: help;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+hr {
+	display: block;
+	height: 1px;
+	border: 0;
+	border-top: 1px solid #ccc;
+	margin: 1.5em 0;
+	padding: 0;
+}
+hr:last-child {display:none}
+
+em{font-style:italic}
+input,select {
+	vertical-align: middle;
+}
+
+/**
+ * Font normalization inspired by YUI Library's fonts.css: developer.yahoo.com/yui/
+ */
+body { 
+	margin: 0; font: 13px/1.231 sans-serif;
+} /* Hack retained to preserve specificity */
+
+body.default{background-color: #F4F2F1;}
+
+select,input,textarea,button {
+	font: 99% sans-serif;
+}
+
+/* Normalize monospace sizing:
+   en.wikipedia.org/wiki/MediaWiki_talk:Common.css/Archive_11#Teletype_style_fix_for_Chrome */
+pre,code,kbd,samp {
+	font-family: monospace, sans-serif;
+}
+
+/**
+ * Minimal base styles.
+ */
+
+/* Always force a scrollbar in non-IE */
+html {
+	overflow-y: scroll;
+}
+
+/* Accessible focus treatment: people.opera.com/patrickl/experiments/keyboard/test */
+a:hover,a:active {
+	outline: none;
+}
+
+ol {
+	list-style-type: decimal;
+}
+
+/* Remove margins for navigation lists */
+nav ul,nav li {
+	margin: 0;
+	list-style: none;
+	list-style-image: none;
+}
+
+small {
+	font-size: 85%;
+}
+
+strong,th {
+	font-weight: bold;
+}
+
+td {
+	vertical-align: top;
+}
+
+/* Set sub, sup without affecting line-height: gist.github.com/413930 */
+sub,sup {
+	font-size: 75%;
+	line-height: 0;
+	position: relative;
+}
+
+sup {
+	top: -0.5em;
+}
+
+sub {
+	bottom: -0.25em;
+}
+
+pre {
+	/* www.pathf.com/blogs/2008/05/formatting-quoted-code-in-blog-posts-css21-white-space-pre-wrap/ */
+	white-space: pre;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	padding: 15px;
+}
+
+textarea {
+	overflow: auto;
+}
+/* www.sitepoint.com/blogs/2010/08/20/ie-remove-textarea-scrollbars/ */
+.ie6 legend,.ie7 legend {
+	margin-left: -7px;
+}
+
+/* Align checkboxes, radios, text inputs with their label by: Thierry Koblentz tjkdesign.com/ez-css/css/base.css  */
+input[type="radio"] {
+	vertical-align: text-bottom;
+}
+
+input[type="checkbox"] {
+	vertical-align: bottom;
+}
+
+.ie7 input[type="checkbox"] {
+	vertical-align: baseline;
+}
+
+.ie6 input {
+	vertical-align: text-bottom;
+}
+
+/* Hand cursor on clickable input elements */
+label,input[type="button"],input[type="submit"],input[type="image"],input[type="file"],button
+	{
+	cursor: pointer;
+}
+
+/* Webkit browsers add a 2px margin outside the chrome of form elements */
+button,input,select,textarea {
+	margin: 0;
+}
+
+/* Colors for form validity */
+input:valid,textarea:valid {
+}
+
+.error input, .error textarea, input:invalid,textarea:invalid {
+	-moz-box-shadow: 0px 0px 5px red;
+	-webkit-box-shadow: 0px 0px 5px red;
+	box-shadow: 0px 0px 5px red;
+}
+
+.no-boxshadow input:invalid,.no-boxshadow textarea:invalid {
+	background-color: #f0dddd;
+}
+
+/* Make buttons play nice in IE:
+   www.viget.com/inspire/styling-the-button-element-in-internet-explorer/ */
+button {
+	width: auto;
+	overflow: visible;
+}
+
+/* Bicubic resizing for non-native sized IMG:
+   code.flickr.com/blog/2008/11/12/on-ui-quality-the-little-things-client-side-image-resizing/ */
+.ie7 img {
+	-ms-interpolation-mode: bicubic;
+}
+
+body,select,input,textarea {
+	color: #444;
+}
+
+/* Headers (h1, h2, etc) have no default font-size or margin; define those yourself */
+h1,h2,h3,h4,h5,h6 {
+	font-weight: bold;
+}
+
+a,a:active,a:visited {color: #607890;text-decoration: none;}
+a:hover {color: #036;text-decoration: none;}
+a.link,a.link:active,a.link:visited {border-bottom: 1px dotted #BBB;cursor:pointer}
+a.link:hover {border-bottom: 1px solid #000;}
+
+
+
+/* ==================================================================================================================== */
+/* ! The 1140px Grid V2 by Andy Taylor \ http://cssgrid.net \ http://www.twitter.com/andytlr \ http://www.andytlr.com   */
+/* ==================================================================================================================== */
+
+.container {
+padding-left: 20px;
+padding-right: 20px;
+}
+
+.row {
+width: 100%;
+max-width: 1140px;
+min-width: 755px;
+margin: 0 auto;
+overflow: hidden;
+}
+
+.onecol, .twocol, .threecol, .fourcol, .fivecol, .sixcol, .sevencol, .eightcol, .ninecol, .tencol, .elevencol {
+margin-right: 3.8%;
+float: left;
+min-height: 1px;
+}
+
+.row .onecol {
+width: 4.85%;
+}
+
+.row .twocol {
+width: 13.45%;
+}
+
+.row .threecol {
+width: 22.05%;
+}
+
+.row .fourcol {
+width: 30.75%;
+}
+
+.row .fivecol {
+width: 39.45%;
+}
+
+.row .sixcol {
+width: 48%;
+}
+
+.row .sevencol {
+width: 56.75%;
+}
+
+.row .eightcol {
+width: 65.4%;
+}
+
+.row .ninecol {
+width: 74.05%;
+}
+
+.row .tencol {
+width: 82.7%;
+}
+
+.row .elevencol {
+width: 91.35%;
+}
+
+.row .twelvecol {
+width: 100%;
+float: left;
+}
+
+.last {
+margin-right: 0px;
+}
+
+img, object, embed {
+max-width: 100%;
+}
+
+img {
+	height: auto;
+}
+ul {list-style-type:none;}
+
+.floatLeft{float:left}
+.floatRight{float:right}
+
+
+
+
+
+html {height:100%}
+body{height:100%;padding-bottom:2em}
+h1 {font-size:6em;line-height:1em;padding-top:1em;padding-bottom:1em;}
+
+.button {
+	cursor:default;
+    border:1px solid #555;
+    -moz-border-radius:6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    -moz-box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.4);
+    -webkit-box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.4);
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.4);
+    background:#777;
+    letter-spacing: -1px;
+    word-spacing:1px;
+}
+.button.active {
+	cursor:pointer;
+	border:1px solid #8cb14e;
+	background:#a0cd58;
+    background: -moz-linear-gradient(100% 100% 90deg, #a0cd58, #c7df82);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#c7df82), to(#a0cd58));
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.4);
+}
+.button a, .button input[type]{
+	cursor:default;
+    font-size:2em;font-weight:bold;color:#fff;text-align:center;
+    border: 1px solid transparent;
+    -moz-border-radius:6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    display:block;
+    padding-left:25px;
+    padding-right:25px;
+    text-shadow: 1px 0 1px #000000;
+}
+.button input[type] {width:100%}
+.button.active a, .button.active input[type]{
+	cursor:pointer;
+	background: -moz-radial-gradient(50% 50%, closest-side,rgba(217, 224, 129, 0.6), rgba(255, 255, 255, 0) 75%);
+    background: -webkit-gradient(radial, center center, 0, center center, 50, from(rgba(217, 224, 129, 0.5)), to(rgba(255,255,255,0)));
+    text-shadow: 0 1px 1px rgba(0,0,0,0.9);
+    border-top:1px solid #f1f7e0;
+    border-left:1px solid #f1f7e0;
+    border-bottom:1px solid transparent;
+    border-right:1px solid transparent;
+}
+.button.active:hover {
+    border:1px solid #8cb14e;
+    -moz-box-shadow: 0px 0px 4px #c9c8c2;
+    -webkit-box-shadow: 0px 0px 4px #c9c8c2;
+    box-shadow: 0px 0px 4px #c9c8c2;
+    background: #afd572;
+}
+.button.active:hover a, .button.active:hover input[type] {text-shadow: #859659 0px 0px 2px;}
+
+input {padding-top:.2em;padding-bottom:.2em}
+
+.fieldset {padding-top:1em;padding-bottom:1em;}
+.fieldset > input {width:100%}
+
+
+
+/* Smaller screens */
+
+@media only screen and (max-width: 1023px) {
+	body {
+        font-size: 0.8em;
+        line-height: 1.5em;
+	}
+}
+
+
+/* Mobile */
+
+@media handheld, only screen and (max-width: 767px) {
+	body {
+        font-size: 1em;
+	}
+	h1 {font-size:4em}
+	.row, body, .container {
+	width: 100%;
+	min-width: 0;
+	margin-left: 0px;
+	margin-right: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	}
+	
+	.row .onecol, .row .twocol, .row .threecol, .row .fourcol, .row .fivecol, .row .sixcol, .row .sevencol, .row .eightcol, .row .ninecol, .row .tencol, .row .elevencol, .row .twelvecol {
+	width: auto;
+	float: none;
+	margin-left: 0px;
+	margin-right: 0px;
+	padding-left: 20px;
+	padding-right: 20px;
+	}
+    .center-when-small {margin: 0px auto;text-align:center;}
+    
+    input {padding-top:.5em;padding-bottom:.5em}
+}
+
+@media handheld, only screen and (max-width: 480px) {
+    body {
+        font-size: 1em;
+	}
+    h1 {font-size:3em;}
+}
+@media handheld, only screen and (max-height: 380px){  
+    h1 {padding-top:.2em;padding-bottom:.2em;}
+}
+
+
+
+/* =============================================================================
+   PLACEHOLDER Media Queries for Responsive Design.
+   These override the primary ('mobile first') styles
+   Modify as content requires.
+   ========================================================================== */
+
+@media only screen and (min-width: 480px) {
+  /* Style adjustments for viewports 480px and over go here */
+
+}
+
+@media only screen and (min-width: 768px) {
+  /* Style adjustments for viewports 768px and over go here */
+}
+
+
+
+
+
+
+
+
+
+
+.printable {display:none}
+@media print {
+  * { background: transparent !important; color: black !important; text-shadow: none !important; filter:none !important; -ms-filter: none !important; } /* Black prints faster: sanbeiji.com/archives/953 */
+  a, a:visited { text-decoration: underline; }
+  a[href]:after { content: " (" attr(href) ")"; }
+  abbr[title]:after { content: " (" attr(title) ")"; }
+  .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after { content: ""; }  /* Don't show links for images, or javascript/internal links */
+  pre, blockquote { border: 1px solid #999; page-break-inside: avoid; }
+  thead { display: table-header-group; } /* css-discuss.incutio.com/wiki/Printing_Tables */
+  tr, img { page-break-inside: avoid; }
+  img { max-width: 100% !important; }
+  @page { margin: 0.5cm; }
+  p, h1, h2, h3 { orphans: 3; widows: 3; }
+  h1, h2, h3 { page-break-after: avoid; }
+  .bg, aside, .aside, footer, .headerbar, #generic_popup, #messages, .nonprintable {display:none !important}
+  .wrapper {margin-top: 0px !important}
+  .printable {display:block !important}
+}

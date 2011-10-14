@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Schapp</title>
+    <meta name="Generator" content="GaugeIt" />
+    <meta name="viewport" content="width=device-width, target-densityDpi=160dpi, initial-scale=1">
+    <meta name="MobileOptimized" content="width">
+    <meta name="HandheldFriendly" content="true">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta http-equiv="cleartype" content="on">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="/static/css/styles.css" type="text/css" media="screen" />
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <script src="/static/js/json2.js"></script>
+    <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+    <script src="/static/js/underscore.js"></script>
+    <script src="/static/js/backbone.js"></script>
+    
+    
+    <script>
+      $(function(){
+        window.SList = Backbone.Model.extend({
+          defaults: function() {
+            return {
+              name : 'New List'
+            };
+          }
+        });
+         
+         
+        window.SListList = Backbone.Collection.extend({
+          model: SList
+          ,url:"http://localhost:9000/api/lists"
+        });
+        window.SLists = new SListList;
+        
+        window.SListView = Backbone.View.extend({
+          tagName:  "li"
+          ,template: _.template($('#list-template').html())
+          ,events: {
+            "click span.list-remove"   : "clear",
+          }
+          ,initialize: function() {
+            this.model.bind('change', this.render, this);
+            this.model.bind('destroy', this.remove, this);
+          }
+          ,render: function() {
+            $(this.el).html(this.template(this.model.toJSON()));
+            this.setText();
+            return this;
+          }
+          ,setText: function() {
+            var text = this.model.get('text');
+            this.$('.list-text').text(text);
+            this.input = this.$('.list-input');
+            this.input.bind('blur', _.bind(this.close, this)).val(text);
+          }
+          ,close: function() {
+            this.model.save({text: this.input.val()});
+            $(this.el).removeClass("editing");
+          }
+          ,updateOnEnter: function(e) {
+            if (e.keyCode == 13) this.close();
+          }
+          ,remove: function() {
+            $(this.el).remove();
+          }
+          ,clear: function() {
+            this.model.destroy();
+          }
+        });
+          
+          
+          
+        window.AppView = Backbone.View.extend({
+          el: $("#approot")
+          ,events: {
+            "keypress #new-slist-name":  "createOnEnter",
+            "click .button":  "createOnClick",
+          }
+          ,initialize: function() {
+            this.input  = this.$("#new-slist-name");
+            SLists.bind('add',  this.addOne, this);
+            //SLists.fetch();
+          }
+          ,addOne: function(slist) {
+            var slist = new SListView({model: slist});
+            this.$("#slists-list").append(slist.render().el);
+          }
+          ,createOnEnter: function(e) {
+            var text = this.input.val();
+            if (!text || e.keyCode != 13) return;
+            SLists.create({name: text});
+            this.input.val('');
+          }
+          ,createOnClick: function(e) {
+            var text = this.input.val();
+            if (!text) return;
+            SLists.create({name: text});
+            this.input.val('');
+          }
+          });
+        window.App = new AppView;
+      });
+    </script>
+    
+    <style>
+      .list-remove {padding: 1em; background-color:black;color:white;float:right}
+    </style>
+    
+    
+    
+    
+    
+    
+    
+  </head>
+  <body class="container">
+    <header class="row">
+      <div class="twelvecol">
+        <h1>Create your shopping list!</h1>
+      </div>
+    </header>
+    
+    
+    
+    <div id="approot" class="row">
+      
+      <div class="twelvecol" id="slists">
+          <ul id="slists-list"></ul>
+      </div>
+    
+    
+      <div class="fourcol fieldset">
+        <input type="text" name="list-name" placeholder="list name" style="width:100%" id="new-slist-name" tabindex="1">
+      </div>
+      <div class="fourcol">
+          <div class="button active"><input type="button" name="start" value="New List" tabindex="3"></div>
+      </div>
+    </div>
+    
+    
+    <script type="text/template" id="list-template">
+      <li class="list <%= done ? 'done' : '' %>">
+        <div class="display">
+          <input class="check" type="checkbox" <%= done ? 'checked="checked"' : '' %> />
+          <div class="list-text"></div>
+          <span class="list-remove">X</span>
+        </div>
+        <div class="edit">
+          <input class="list-input" type="text" value="" />
+        </div>
+      </li>
+    </script>
+  </body>
+</html>
