@@ -56,13 +56,18 @@
         });
 
         window.SListView = Backbone.View.extend({
-          el: $("#slist")
+          el: $("#approot")
+          , attachel: $('#slist')
           , template: _.template($('#list-template').html())
           , events: {
             "click .list-text": "edit"
+            , "keypress #new-slist-name": "createOnEnter"
+            , "click .button": "createOnClick"
+
           }
           , initialize: function ()
           {
+            this.input = $("#new-slist-name");
             this.model.bind('change', this.render, this);
             this.model.bind('destroy', this.remove, this);
           }
@@ -70,14 +75,16 @@
           {
             var view = this;
             if (!this.model.isNew()) {
+              listRouter.navigate("/" + this.model.get('link'));
               $("#app-create-controls").fadeOut(200, function ()
               {
-                $(view.el).html(view.template(view.model.toJSON()));
-                $(view.el).show();
+                $(view.attachel).html(view.template(view.model.toJSON()));
+                $(view.attachel).show();
                 view.setText();
+                view.input.val('');
               });
             } else {
-              $(this.el).hide();
+              $(this.attachel).hide();
               $("#app-create-controls").fadeIn();
             }
             return null;
@@ -86,52 +93,23 @@
           {
             var text = this.model.get('name');
             this.$('.list-text').text(text);
-            this.input = this.$('.list-input');
-            this.input.bind('blur', _.bind(this.close, this)).val(text);
+            this.nameinput = this.$('.list-input');
+            this.nameinput.bind('blur', _.bind(this.close, this)).val(text);
           }
           , edit: function ()
           {
-            $(this.el).addClass("editing");
+            $(this.attachel).addClass("editing");
           }
           , close: function ()
           {
-            this.model.save({ name: this.input.val() });
-            $(this.el).removeClass("editing");
+            this.model.save({ name: this.nameinput.val() });
+            $(this.attachel).removeClass("editing");
           }
           , updateOnEnter: function (e)
           {
             if (e.keyCode == 13) this.close();
           }
-        });
-
-
-        window.AppView = Backbone.View.extend({
-          el: $("#approot")
-          , events: {
-            "keypress #new-slist-name": "createOnEnter"
-            , "click .button": "createOnClick"
-          }
-          , initialize: function ()
-          {
-            this.input = this.$("#new-slist-name");
-            this.model = new SList;
-            this.view = new SListView({ model: this.model });
-          }
-          , createOnEnter: function (e)
-          {
-            var text = this.input.val();
-            if (!text || e.keyCode != 13) return;
-            this.model.save({ name: text });
-            this.input.val('');
-          }
-          , createOnClick: function (e)
-          {
-            var text = this.input.val();
-            if (!text) return;
-            this.model.save({ name: text });
-            this.input.val('');
-          }
-          , reset: function (link)
+          ,reset: function (link)
           {
             if (link) {
               this.model.set({ 'link': link }, { silent: true });
@@ -140,8 +118,23 @@
               this.model.clear();
             }
           }
+          , createOnEnter: function (e)
+          {
+            var text = this.input.val();
+            if (!text || e.keyCode != 13) return;
+            this.model.save({ name: text });
+          }
+          , createOnClick: function (e)
+          {
+            var text = this.input.val();
+            if (!text) return;
+            this.model.save({ name: text });
+          }
+
         });
-        window.App = new AppView;
+
+
+        window.App = new SListView({ model: new SList });
 
         ListRouter = Backbone.Router.extend({
           routes: { "/": "resetView"
@@ -160,6 +153,7 @@
 
         listRouter = new ListRouter;
         Backbone.history.start();
+        $('body').delegate(".listlink", "click", function (evt) { App.reset($(evt.target).attr("_href")) });
       });
     </script>
     
@@ -170,6 +164,7 @@
       #app-create-controls, .edit {display:none;}
       .editing .display {display:none;}
       .editing .edit {display:block;}
+      .listlink{cursor:pointer}
     </style>
     
     
@@ -183,7 +178,7 @@
     <header class="row">
       <div class="twelvecol">
         <h1>Create your shopping list!</h1>
-        <a href="#/I">sample list</a>
+        <a class="listlink" _href="I">sample list</a>
       </div>
     </header>
     
