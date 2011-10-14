@@ -17,7 +17,6 @@
     <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
     <script src="/static/js/underscore.js"></script>
     <script src="/static/js/backbone.js"></script>
-    <script src="/static/js/backbone-localstorage.js"></script>
     
     
     <script>
@@ -25,8 +24,7 @@
         window.SList = Backbone.Model.extend({
           defaults: function() {
             return {
-              done:  false
-              ,order: SLists.nextOrder()
+              name : 'New List'
             };
           }
         });
@@ -34,14 +32,7 @@
          
         window.SListList = Backbone.Collection.extend({
           model: SList
-          ,localStorage: new Store("shoppinglists")
-          ,nextOrder: function() {
-            if (!this.length) return 1;
-            return this.last().get('order') + 1;
-          }
-          ,comparator: function(todo) {
-            return todo.get('order');
-          }
+          ,url:"http://localhost:9000/api/lists"
         });
         window.SLists = new SListList;
         
@@ -86,13 +77,13 @@
         window.AppView = Backbone.View.extend({
           el: $("#approot")
           ,events: {
-            "keypress #new-slist":  "createOnEnter",
+            "keypress #new-slist-name":  "createOnEnter",
             "click .button":  "createOnClick",
           }
           ,initialize: function() {
-            this.input  = this.$("#new-slist");
+            this.input  = this.$("#new-slist-name");
             SLists.bind('add',  this.addOne, this);
-            SLists.fetch();
+            //SLists.fetch();
           }
           ,addOne: function(slist) {
             var slist = new SListView({model: slist});
@@ -101,13 +92,13 @@
           ,createOnEnter: function(e) {
             var text = this.input.val();
             if (!text || e.keyCode != 13) return;
-            SLists.create({text: text});
+            SLists.create({name: text});
             this.input.val('');
           }
           ,createOnClick: function(e) {
             var text = this.input.val();
             if (!text) return;
-            SLists.create({text: text});
+            SLists.create({name: text});
             this.input.val('');
           }
           });
@@ -143,7 +134,7 @@
     
     
       <div class="fourcol fieldset">
-        <input type="text" name="username" placeholder="user name" style="width:100%" id="new-slist" tabindex="1">
+        <input type="text" name="list-name" placeholder="list name" style="width:100%" id="new-slist-name" tabindex="1">
       </div>
       <div class="fourcol">
           <div class="button active"><input type="button" name="start" value="New List" tabindex="3"></div>
