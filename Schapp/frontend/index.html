@@ -50,7 +50,7 @@
           }
         });
          
-         
+        
         window.SListList = Backbone.Collection.extend({model: SList});
         window.SLists = new SListList;
         
@@ -58,7 +58,6 @@
           tagName:  "li",className: "list"
           ,template: _.template($('#list-template').html())
           ,events: {
-            "click .list-back": "back",
             "click .list-text": "edit"
           }
           ,initialize: function() {
@@ -86,13 +85,6 @@
           ,updateOnEnter: function(e) {
             if (e.keyCode == 13) this.close();
           }
-          ,clear: function() {
-            this.model.destroy();
-          }
-          ,back: function() {
-            this.remove();
-            SLists.remove(this.model);
-          }
         });
           
           
@@ -105,9 +97,7 @@
           }
           ,initialize: function() {
             this.input  = this.$("#new-slist-name");
-            SLists.bind('add',  this.addOne, this);
-            SLists.bind('remove',  this.display, this);
-            //SLists.fetch();
+            SLists.bind('add', this.addOne, this);
           }
           ,addOne: function(slist) {
             var slist = new SListView({model: slist}), _t = this;
@@ -128,8 +118,24 @@
             SLists.create({name: text});
             this.input.val('');
           }
-          });
+        });
         window.App = new AppView;
+
+        ListRouter = Backbone.Router.extend({
+          routes :{"/":"resetView"
+                  ,"/:link" : "openList"
+                  ,"*other" : "resetView"
+          }
+          ,openList : function(link){
+            SLists.add(new SList({link:link}).fetch());
+          }
+          ,resetView : function(){
+            _.invoke(SLists.models, "remove");
+          }
+        });
+
+        listRouter = new ListRouter;
+        Backbone.history.start();
       });
     </script>
     
@@ -153,6 +159,7 @@
     <header class="row">
       <div class="twelvecol">
         <h1>Create your shopping list!</h1>
+        <a href="#/I">sample list</a>
       </div>
     </header>
     
@@ -176,7 +183,6 @@
     <script type="text/template" id="list-template">
         <div class="display">
           <div class="list-text"><%= link %> - <%= name %></div>
-          <a class="list-back">&laquo; back</a>
         </div>
         <div class="edit">
           <input class="list-input" type="text" value="" />
