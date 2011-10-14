@@ -10,37 +10,56 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta http-equiv="cleartype" content="on">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <link rel="stylesheet" href="/static/css/styles.css" type="text/css" media="screen" />
-    <link rel="shortcut icon" href="/static/favicon.ico">
-    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
-    <script src="/static/js/json2.js"></script>
+    <link rel="stylesheet" href="static/css/styles.css" type="text/css" media="screen" />
+    <link rel="shortcut icon" href="static/favicon.ico">
+    <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
+    <script src="static/js/json2.js"></script>
     <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
-    <script src="/static/js/underscore.js"></script>
-    <script src="/static/js/backbone.js"></script>
+    <script src="static/js/underscore.js"></script>
+    <script src="static/js/backbone.js"></script>
     
     
     <script>
       $(function(){
-        window.SList = Backbone.Model.extend({
+        window.SItem = Backbone.Model.extend({
           defaults: function() {
             return {
+              name : 'New Item'
+            };
+          }
+        });
+        window.SItemList = Backbone.Collection.extend({model: SItem});
+
+        window.SList = Backbone.Model.extend({
+          initialize: function(){
+            this.items = new SItemList;
+            this.items.url = '/api/items';
+          }
+          ,url : function(){
+            var l = this.get('link');
+            return l?'/api/lists/'+l:'/api/lists';
+          }
+          ,isNew : function() {
+            return this.get('link') == null;
+          }
+          ,defaults: function() {
+            return {
               name : 'New List'
+              ,link : null
             };
           }
         });
          
          
-        window.SListList = Backbone.Collection.extend({
-          model: SList
-          ,url:"http://localhost:9000/api/lists"
-        });
+        window.SListList = Backbone.Collection.extend({model: SList});
         window.SLists = new SListList;
         
         window.SListView = Backbone.View.extend({
-          tagName:  "li"
+          tagName:  "li",className: "list"
           ,template: _.template($('#list-template').html())
           ,events: {
-            "click span.list-remove"   : "clear",
+            "click .list-back": "back",
+            "click .list-text": "edit"
           }
           ,initialize: function() {
             this.model.bind('change', this.render, this);
@@ -52,23 +71,27 @@
             return this;
           }
           ,setText: function() {
-            var text = this.model.get('text');
+            var text = this.model.get('name');
             this.$('.list-text').text(text);
             this.input = this.$('.list-input');
             this.input.bind('blur', _.bind(this.close, this)).val(text);
           }
+          ,edit: function() {
+            $(this.el).addClass("editing");
+          }
           ,close: function() {
-            this.model.save({text: this.input.val()});
+            this.model.save({name: this.input.val()});
             $(this.el).removeClass("editing");
           }
           ,updateOnEnter: function(e) {
             if (e.keyCode == 13) this.close();
           }
-          ,remove: function() {
-            $(this.el).remove();
-          }
           ,clear: function() {
             this.model.destroy();
+          }
+          ,back: function() {
+            this.remove();
+            SLists.remove(this.model);
           }
         });
           
@@ -83,11 +106,15 @@
           ,initialize: function() {
             this.input  = this.$("#new-slist-name");
             SLists.bind('add',  this.addOne, this);
+            SLists.bind('remove',  this.display, this);
             //SLists.fetch();
           }
           ,addOne: function(slist) {
-            var slist = new SListView({model: slist});
-            this.$("#slists-list").append(slist.render().el);
+            var slist = new SListView({model: slist}), _t = this;
+            $("#app-create-controls").fadeOut(200, function(){_t.$("#slists-list").append(slist.render().el);});
+          }
+          ,display:function(slist){
+            $("#app-create-controls").fadeIn();
           }
           ,createOnEnter: function(e) {
             var text = this.input.val();
@@ -108,6 +135,11 @@
     
     <style>
       .list-remove {padding: 1em; background-color:black;color:white;float:right}
+      .list-back {float:right;cursor:pointer}
+      .display {display:block;}
+      .edit {display:none;}
+      .editing .display {display:none;}
+      .editing .edit {display:block;}
     </style>
     
     
@@ -127,32 +159,28 @@
     
     
     <div id="approot" class="row">
-      
       <div class="twelvecol" id="slists">
           <ul id="slists-list"></ul>
       </div>
-    
-    
-      <div class="fourcol fieldset">
-        <input type="text" name="list-name" placeholder="list name" style="width:100%" id="new-slist-name" tabindex="1">
-      </div>
-      <div class="fourcol">
-          <div class="button active"><input type="button" name="start" value="New List" tabindex="3"></div>
+      <div id="app-create-controls">
+          <div class="fourcol fieldset">
+            <input type="text" name="list-name" placeholder="list name" style="width:100%" id="new-slist-name" tabindex="1">
+          </div>
+          <div class="fourcol">
+              <div class="button active"><input type="button" name="start" value="New List" tabindex="3"></div>
+          </div>
       </div>
     </div>
     
     
     <script type="text/template" id="list-template">
-      <li class="list <%= done ? 'done' : '' %>">
         <div class="display">
-          <input class="check" type="checkbox" <%= done ? 'checked="checked"' : '' %> />
-          <div class="list-text"></div>
-          <span class="list-remove">X</span>
+          <div class="list-text"><%= link %> - <%= name %></div>
+          <a class="list-back">&laquo; back</a>
         </div>
         <div class="edit">
           <input class="list-input" type="text" value="" />
         </div>
-      </li>
     </script>
   </body>
 </html>
