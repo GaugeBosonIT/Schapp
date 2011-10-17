@@ -34,9 +34,7 @@ namespace Schapp.Models
             [XmlAttribute("link")]
             public string link { get; set; }
 
-            [DataMember]
-            [XmlElement("Item")]
-            public Item[] item { get; set; }
+
         }
         [DataContract]
         [Serializable]

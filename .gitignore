@@ -20,3 +20,10 @@ _ReSharper.*
 *.resharper.user
 *.rptproj.user
 *.db
+/Schapp/obj/Debug/Schapp.csproj.FileListAbsolute.txt
+/schapp/obj/debug/Schapp.dll
+/schapp/obj/debug/Schapp.pdb
+/Schapp/obj/Debug/Schapp.dll
+/schapp/obj/debug/Schapp.pdb
+/schapp/obj/debug/Schapp.pdb
+/Schapp/obj/Debug/Schapp.pdb
