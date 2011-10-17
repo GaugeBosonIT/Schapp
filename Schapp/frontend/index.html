@@ -14,10 +14,11 @@
     <link rel="shortcut icon" href="static/favicon.ico">
     <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
     <script src="static/js/json2.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0rc1/jquery.mobile-1.0rc1.min.css" />
     <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
     <script src="static/js/underscore.js"></script>
     <script src="static/js/backbone.js"></script>
-    
+    <script src="http://code.jquery.com/mobile/1.0rc1/jquery.mobile-1.0rc1.min.js"></script>
     
     <script>
       $(function ()
@@ -174,31 +175,28 @@
     
     
   </head>
-  <body class="container">
-    <header class="row">
-      <div class="twelvecol">
-        <h1>Create your shopping list!</h1>
-        <a class="listlink" _href="I">sample list</a>
+  <body>
+    <div data-role="page">
+      <div data-role="header">
+          <h1>Create your shopping list!</h1>
+          <a class="listlink" _href="I">sample list</a>
       </div>
-    </header>
     
-    
-    
-    <div id="approot" class="row">
-      <div class="twelvecol" id="slists">
-          <div id="slist"></div>
+      <div id="approot" data-role="content">
+        <div id="slist"></div>
+        <div id="app-create-controls">
+            <div class="fieldset">
+              <input type="text" name="list-name" placeholder="list name" style="width:100%" id="new-slist-name" tabindex="1">
+            </div>
+            <div class="fieldset">
+                <div class="button active"><input type="button" name="start" id="create-list" value="New List" tabindex="3"></div>
+            </div>
+        </div>
       </div>
-      <div id="app-create-controls">
-          <div class="fourcol fieldset">
-            <input type="text" name="list-name" placeholder="list name" style="width:100%" id="new-slist-name" tabindex="1">
-          </div>
-          <div class="fourcol">
-              <div class="button active"><input type="button" name="start" id="create-list" value="New List" tabindex="3"></div>
-          </div>
-      </div>
-    </div>
+    </div>    
     
-    
+
+
     <script type="text/template" id="list-template">
         <div class="display">
           <div class="list-text"><%= link %> - <%= name %></div>
