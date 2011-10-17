@@ -23,148 +23,190 @@
     });
   </script>
   <script src="http://code.jquery.com/mobile/1.0rc1/jquery.mobile-1.0rc1.min.js"></script>
-    <script>
-      $(function () {
-        window.SItem = Backbone.Model.extend({
-          defaults: function () {
-            return {
-              name: 'New Item'
-            };
-          }
-        });
-        window.SItemList = Backbone.Collection.extend({ model: SItem });
+  <script>
+    $(function () {
+      window.ShoppingItem = Backbone.Model.extend({
+        defaults: function () {
+          return { name: 'New Item', price: 0.0, shop: "New Shop", quantity: 1 };
+        }
+        , sync: function (method, model, options) { options.success(); }
+      });
+      window.ShoppingItemList = Backbone.Collection.extend({ model: ShoppingItem });
+      window.ShoppingList = Backbone.Model.extend({
+        initialize: function () {
+          this._items = new ShoppingItemList;
+        }
+        , toJSON: function () {
+          var attrs = _.clone(this.attributes);
+          if (this._items.length) attrs['item'] = this._items.toJSON();
+          return attrs;
+        }
+        , url: function () {
+          var l = this.get('link');
+          return l ? '/api/lists/' + l : '/api/lists';
+        }
+        , isNew: function () {
+          return this.get('link') == null;
+        }
+        , defaults: function () {
+          return {
+            name: 'New List'
+            , link: null
+          };
+        }
+      });
 
-        window.SList = Backbone.Model.extend({
-          initialize: function () {
-            this.items = new SItemList;
-          }
-          , url: function () {
-            var l = this.get('link');
-            return l ? '/api/lists/' + l : '/api/lists';
-          }
-          , isNew: function () {
-            return this.get('link') == null;
-          }
-          , defaults: function () {
-            return {
-              name: 'New List'
-              , link: null
-            };
-          }
-        });
+      window.ShoppingItemView = Backbone.View.extend({
+        tagName: "div"
+        , template: _.template($('#item-template').html())
+        , initialize: function () {
+          this.model.bind('change', this.render, this);
+        }
+        , render: function () {
+          $(this.el).html(this.template(this.model.toJSON()));
+          $(this.el).prop("data-role", "collapsible");
+          $(this.el).trigger("create");
+          return this;
+        }
+      });
 
-        window.SListView = Backbone.View.extend({
-          el: $("#approot")
-          , attachel: $('#slist')
-          , nextpage : $("#shoppinglist")
-          , template: _.template($('#list-template').html())
-          , events: {
-            "click .list-text": "edit"
-            , "keypress #new-slist-name": "createOnEnter"
-            , "click .button": "createOnClick"
+      window.ShoppingListView = Backbone.View.extend({
+        el: $('#slist')
+        , template: _.template($('#list-template').html())
+        , events: {
+          "click .list-name-text": "edit"
+          , "click .list-name-input-confirm": "close"
+          , "keypress .list-item-input": "addOnEnter"
+          , "click .list-item-input-confirm": "addOnClick"
+        }
+        , initialize: function () {
+          this.model._items.bind('add', this.addOne, this);
+        }
+        , render: function () {
+          var html = $(this.el).html(this.template(this.model.toJSON())).trigger("create");
+          this.setText();
+          return html;
+        }
+        , setText: function () {
+          var text = this.model.get('name');
+          this.$('.list-name-text').text(text);
+          this.nameinput = this.$('.list-name-input');
+          this.nameinput.bind('blur', _.bind(this.close, this)).val(text);
+          this.addinput = this.$('.list-item-input');
+        }
+        , edit: function () {
+          $(this.el).addClass("editing");
+        }
+        , close: function () {
+          this.model.save({ name: this.nameinput.val() });
+          $(this.el).removeClass("editing");
+        }
+        , updateOnEnter: function (e) {
+          if (e.keyCode == 13) this.close();
+        }
+        , addOne: function (item) {
+          var view = new ShoppingItemView({ model: item });
+          this.$("#shoppinglist-items").append(view.render().el);
+        }
+        , addOnClick: function (e) { return this.addOn(e, function (e) { return false; }); }
+        , addOnEnter: function (e) { return this.addOn(e, function (e) { return e.keyCode != 13; }); }
+        , addOn: function (e, filter) {
+          var name = this.addinput.val();
+          if (!name || filter(e)) return;
+          this.model._items.create({ name: name });
+          this.model.save();
+          this.addinput.val('');
+        }
+      });
 
-          }
-          , initialize: function () {
-            this.input = $("#new-slist-name");
-            this.model.bind('change', this.render, this);
-            this.model.bind('destroy', this.remove, this);
-          }
-          , render: function () {
-            if (!this.model.isNew()) {
-              if (this.model.hasChanged('link')) {
-                listRouter.navigate("list/" + this.model.get('link'));
-              }
-              $(this.attachel).html(this.template(this.model.toJSON())).trigger("create");
-              this.setText();
-              $.mobile.changePage(this.nextpage, { transition: "slideup", changeHash: false, allowSamePageTransition: false, reverse: false, showLoadMsg: true });
-            } else {
-              this.input.val('');
-              $.mobile.changePage($("#home"), { transition: "slideup", changeHash: false, allowSamePageTransition: false, reverse: false, showLoadMsg: true });
+
+
+
+
+      window.MainAppView = Backbone.View.extend({
+        el: $("#approot")
+        , events: {
+          "keypress #new-slist-name": "createOnEnter"
+          , "click .button": "createOnClick"
+        }
+        , initialize: function () {
+          this.input = $("#new-slist-name");
+          this.shoppinglist_view = new ShoppingListView({ model: new ShoppingList });
+          this.shoppinglist_view.model.bind('change', this.render, this);
+        }
+        , render: function () {
+          if (!this.shoppinglist_view.model.isNew()) {
+            if (this.shoppinglist_view.model.hasChanged('link')) {
+              listRouter.navigate("list/" + this.shoppinglist_view.model.get('link'));
             }
-            return null;
+            this.shoppinglist_view.render();
+            $.mobile.changePage($("#shoppinglist"), { transition: "slideup", changeHash: false, allowSamePageTransition: false, reverse: false, showLoadMsg: true });
+          } else {
+            $.mobile.changePage($("#home"), { transition: "slideup", changeHash: false, allowSamePageTransition: true, reverse: true, showLoadMsg: false });
+            this.input.val('');
           }
-          , setText: function () {
-            var text = this.model.get('name');
-            this.$('.list-text').text(text);
-            this.nameinput = this.$('.list-input');
-            this.nameinput.bind('blur', _.bind(this.close, this)).val(text);
+          return null;
+        }
+        , reset: function (link) {
+          if (link) {
+            this.shoppinglist_view.model.set({ 'link': link }, { silent: true });
+            this.shoppinglist_view.model.fetch();
+          } else {
+            this.shoppinglist_view.model.clear();
           }
-          , edit: function () {
-            $(this.attachel).addClass("editing");
-          }
-          , close: function () {
-            this.model.save({ name: this.nameinput.val() });
-            $(this.attachel).removeClass("editing");
-          }
-          , updateOnEnter: function (e) {
-            if (e.keyCode == 13) this.close();
-          }
-          , reset: function (link) {
-            if (link) {
-              this.model.set({ 'link': link }, { silent: true });
-              this.model.fetch();
-            } else {
-              this.model.clear();
-            }
-          }
-          , createOnEnter: function (e) {
-            var text = this.input.val();
-            if (!text || e.keyCode != 13) return;
-            this.model.save({ name: text });
-          }
-          , createOnClick: function (e) {
-            var text = this.input.val();
-            if (!text) return;
-            this.model.save({ name: text });
-          }
-
-        });
+        }
+        , createOnEnter: function (e) {
+          var text = this.input.val();
+          if (!text || e.keyCode != 13) return;
+          this.shoppinglist_view.model.save({ name: text });
+        }
+        , createOnClick: function (e) {
+          var text = this.input.val();
+          if (!text) return;
+          this.shoppinglist_view.model.save({ name: text });
+        }
+      });
 
 
-        window.App = new SListView({ model: new SList });
+      window.App = new MainAppView();
 
-        ListRouter = Backbone.Router.extend({
-          routes: { "home": "resetView"
+      ListRouter = Backbone.Router.extend({
+        routes: { "home": "resetView"
                   , "list/:link": "openList"
                   , "*other": "resetView"
-          }
-          , openList: function (link) {
-            App.reset(link);
-          }
-          , resetView: function () {
-            App.reset();
-          }
-        });
-
-        listRouter = new ListRouter;
-        Backbone.history.start();
+        }
+        , openList: function (link) {
+          App.reset(link);
+        }
+        , resetView: function () {
+          App.reset();
+        }
       });
+
+      listRouter = new ListRouter;
+      Backbone.history.start();
+    });
   </script>
   <style>
-    .list-remove
-    {
-      padding: 1em;
-      background-color: black;
-      color: white;
-      float: right;
-    }
-    .list-back
-    {
-      float: right;
-      cursor: pointer;
-    }
+      .list-remove {padding: 1em; background-color:black;color:white;float:right}
+      .editing .editor
+      , .display {display:block;}
+      .hidden
+      , .editing .display
+      , .editor {display:none;}
   </style>
 </head>
 <body>
   <div data-role="page" id="home">
     <div data-role="header" data-position="inline">
-      <h1>Create your shopping list!</h1>
-      <a class="ui-btn-right" href="#list/I" rel=external>sample list</a>
+      <h1>
+        Create your shopping list!</h1>
+      <a class="ui-btn-right" href="#list/I" rel="external">sample list</a>
     </div>
     <div id="approot" data-role="content">
       <div id="app-create-controls">
         <div class="fieldset">
-          <input type="text" name="list-name" placeholder="list name" style="width: 100%" id="new-slist-name"
+          <input type="text" name="list-name" placeholder="list name" id="new-slist-name"
             tabindex="1">
         </div>
         <div class="fieldset">
@@ -174,24 +216,37 @@
       </div>
     </div>
   </div>
-  
-  <div data-role="page" class="datarolepage" id="shoppinglist" data-title="Edit Shopping List">
-    <div data-role="header">
-      <a href="#home" rel=external>back</a>
-      <h1>Edit Shopping List!</h1>
-      <a href="#home" data-icon="check" rel=external>send by email</a>
-    </div>
-    <div id="slist"  data-role="content">
-    </div>
-  </div>
 
+  <div data-role="page" id="shoppinglist" data-title="Edit Shopping List">
+    <div data-role="header">
+      <a href="#home" rel="external">back</a>
+      <h1>
+        Edit Shopping List!</h1>
+      <a href="#home" data-icon="check" rel="external">send by email</a>
+    </div>
+    <div id="slist" data-role="content"></div>
+  </div>
   <script type="text/template" id="list-template">
+      <h4>List:</h4>
       <div class="display">
-        <div class="list-text"><%= link %> - <%= name %></div>
+        <h2 class="list-name-text"><%= name %></h2>
       </div>
-      <div class="edit">
-        <input class="list-input" type="text" value="" />
+      <div class="editor">
+        <input class="list-name-input" type="text" value="" />
+        <input class="list-name-input-confirm" type="button" value="save" />
       </div>
+      <br/>
+      <br/>
+      <ul id="shoppinglist-items"></ul>
+      <h1>Add Items<h1/>
+      <input class="list-item-input" type="text" value="" />
+      <input class="list-item-input-confirm" type="button" value="add" />
   </script>
+
+  <script type="text/template" id="item-template">
+      <h3><%= name %></h3>
+  </script>
+
+
 </body>
 </html>
