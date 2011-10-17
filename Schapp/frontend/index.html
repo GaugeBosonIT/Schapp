@@ -1,31 +1,32 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Schapp</title>
-    <meta name="Generator" content="GaugeIt" />
-    <meta name="viewport" content="width=device-width, target-densityDpi=160dpi, initial-scale=1">
-    <meta name="MobileOptimized" content="width">
-    <meta name="HandheldFriendly" content="true">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta http-equiv="cleartype" content="on">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <link rel="stylesheet" href="static/css/styles.css" type="text/css" media="screen" />
-    <link rel="shortcut icon" href="static/favicon.ico">
-    <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
-    <script src="static/js/json2.js"></script>
-    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0rc1/jquery.mobile-1.0rc1.min.css" />
-    <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
-    <script src="static/js/underscore.js"></script>
-    <script src="static/js/backbone.js"></script>
-    <script src="http://code.jquery.com/mobile/1.0rc1/jquery.mobile-1.0rc1.min.js"></script>
-    
+<head>
+  <meta charset="utf-8">
+  <title>Schapp</title>
+  <meta name="Generator" content="GaugeIt" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="MobileOptimized" content="width">
+  <meta name="HandheldFriendly" content="true">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="cleartype" content="on">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <link rel="shortcut icon" href="static/favicon.ico">
+  <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0rc1/jquery.mobile-1.0rc1.min.css" />
+  <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+  <script src="static/js/json2.js"></script>
+  <script src="static/js/underscore.js"></script>
+  <script src="static/js/backbone.js"></script>
+  <script>
+    $(document).bind("mobileinit", function () {
+      $.extend($.mobile, { ajaxEnabled: false, hashListeningEnabled: false, pushStateEnabled: false });
+    });
+  </script>
+  <script src="http://code.jquery.com/mobile/1.0rc1/jquery.mobile-1.0rc1.min.js"></script>
     <script>
-      $(function ()
-      {
+      $(function () {
         window.SItem = Backbone.Model.extend({
-          defaults: function ()
-          {
+          defaults: function () {
             return {
               name: 'New Item'
             };
@@ -34,21 +35,17 @@
         window.SItemList = Backbone.Collection.extend({ model: SItem });
 
         window.SList = Backbone.Model.extend({
-          initialize: function ()
-          {
+          initialize: function () {
             this.items = new SItemList;
           }
-          , url: function ()
-          {
+          , url: function () {
             var l = this.get('link');
             return l ? '/api/lists/' + l : '/api/lists';
           }
-          , isNew: function ()
-          {
+          , isNew: function () {
             return this.get('link') == null;
           }
-          , defaults: function ()
-          {
+          , defaults: function () {
             return {
               name: 'New List'
               , link: null
@@ -59,6 +56,7 @@
         window.SListView = Backbone.View.extend({
           el: $("#approot")
           , attachel: $('#slist')
+          , nextpage : $("#shoppinglist")
           , template: _.template($('#list-template').html())
           , events: {
             "click .list-text": "edit"
@@ -66,52 +64,42 @@
             , "click .button": "createOnClick"
 
           }
-          , initialize: function ()
-          {
+          , initialize: function () {
             this.input = $("#new-slist-name");
             this.model.bind('change', this.render, this);
             this.model.bind('destroy', this.remove, this);
           }
-          , render: function ()
-          {
-            var view = this;
+          , render: function () {
             if (!this.model.isNew()) {
-              listRouter.navigate("/" + this.model.get('link'));
-              $("#app-create-controls").fadeOut(200, function ()
-              {
-                $(view.attachel).html(view.template(view.model.toJSON()));
-                $(view.attachel).show();
-                view.setText();
-                view.input.val('');
-              });
+              if (this.model.hasChanged('link')) {
+                listRouter.navigate("list/" + this.model.get('link'));
+              }
+              $(this.attachel).html(this.template(this.model.toJSON())).trigger("create");
+              this.setText();
+              $.mobile.changePage(this.nextpage, { transition: "slideup", changeHash: false, allowSamePageTransition: false, reverse: false, showLoadMsg: true });
             } else {
-              $(this.attachel).hide();
-              $("#app-create-controls").fadeIn();
+              this.input.val('');
+              $.mobile.changePage($("#home"), { transition: "slideup", changeHash: false, allowSamePageTransition: false, reverse: false, showLoadMsg: true });
             }
             return null;
           }
-          , setText: function ()
-          {
+          , setText: function () {
             var text = this.model.get('name');
             this.$('.list-text').text(text);
             this.nameinput = this.$('.list-input');
             this.nameinput.bind('blur', _.bind(this.close, this)).val(text);
           }
-          , edit: function ()
-          {
+          , edit: function () {
             $(this.attachel).addClass("editing");
           }
-          , close: function ()
-          {
+          , close: function () {
             this.model.save({ name: this.nameinput.val() });
             $(this.attachel).removeClass("editing");
           }
-          , updateOnEnter: function (e)
-          {
+          , updateOnEnter: function (e) {
             if (e.keyCode == 13) this.close();
           }
-          ,reset: function (link)
-          {
+          , reset: function (link) {
             if (link) {
               this.model.set({ 'link': link }, { silent: true });
               this.model.fetch();
@@ -119,14 +107,12 @@
               this.model.clear();
             }
           }
-          , createOnEnter: function (e)
-          {
+          , createOnEnter: function (e) {
             var text = this.input.val();
             if (!text || e.keyCode != 13) return;
             this.model.save({ name: text });
           }
-          , createOnClick: function (e)
-          {
+          , createOnClick: function (e) {
             var text = this.input.val();
             if (!text) return;
             this.model.save({ name: text });
@@ -138,72 +124,74 @@
         window.App = new SListView({ model: new SList });
 
         ListRouter = Backbone.Router.extend({
-          routes: { "/": "resetView"
-                  , "/:link": "openList"
+          routes: { "home": "resetView"
+                  , "list/:link": "openList"
                   , "*other": "resetView"
           }
-          , openList: function (link)
-          {
-            App.reset(link)
+          , openList: function (link) {
+            App.reset(link);
           }
-          , resetView: function ()
-          {
+          , resetView: function () {
             App.reset();
           }
         });
 
         listRouter = new ListRouter;
         Backbone.history.start();
-        $('body').delegate(".listlink", "click", function (evt) { App.reset($(evt.target).attr("_href")) });
       });
-    </script>
-    
-    <style>
-      .list-remove {padding: 1em; background-color:black;color:white;float:right}
-      .list-back {float:right;cursor:pointer}
-      .display {display:block;}
-      #app-create-controls, .edit {display:none;}
-      .editing .display {display:none;}
-      .editing .edit {display:block;}
-      .listlink{cursor:pointer}
-    </style>
-    
-    
-    
-    
-    
-    
-    
-  </head>
-  <body>
-    <div data-role="page">
-      <div data-role="header">
-          <h1>Create your shopping list!</h1>
-          <a class="listlink" _href="I">sample list</a>
-      </div>
-    
-      <div id="approot" data-role="content">
-        <div id="slist"></div>
-        <div id="app-create-controls">
-            <div class="fieldset">
-              <input type="text" name="list-name" placeholder="list name" style="width:100%" id="new-slist-name" tabindex="1">
-            </div>
-            <div class="fieldset">
-                <div class="button active"><input type="button" name="start" id="create-list" value="New List" tabindex="3"></div>
-            </div>
+  </script>
+  <style>
+    .list-remove
+    {
+      padding: 1em;
+      background-color: black;
+      color: white;
+      float: right;
+    }
+    .list-back
+    {
+      float: right;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div data-role="page" id="home">
+    <div data-role="header" data-position="inline">
+      <h1>Create your shopping list!</h1>
+      <a class="ui-btn-right" href="#list/I" rel=external>sample list</a>
+    </div>
+    <div id="approot" data-role="content">
+      <div id="app-create-controls">
+        <div class="fieldset">
+          <input type="text" name="list-name" placeholder="list name" style="width: 100%" id="new-slist-name"
+            tabindex="1">
+        </div>
+        <div class="fieldset">
+          <div class="button active">
+            <input type="button" name="start" id="create-list" value="New List" tabindex="3"></div>
         </div>
       </div>
-    </div>    
-    
+    </div>
+  </div>
+  
+  <div data-role="page" class="datarolepage" id="shoppinglist" data-title="Edit Shopping List">
+    <div data-role="header">
+      <a href="#home" rel=external>back</a>
+      <h1>Edit Shopping List!</h1>
+      <a href="#home" data-icon="check" rel=external>send by email</a>
+    </div>
+    <div id="slist"  data-role="content">
+    </div>
+  </div>
 
-
-    <script type="text/template" id="list-template">
-        <div class="display">
-          <div class="list-text"><%= link %> - <%= name %></div>
-        </div>
-        <div class="edit">
-          <input class="list-input" type="text" value="" />
-        </div>
-    </script>
-  </body>
+  <script type="text/template" id="list-template">
+      <div class="display">
+        <div class="list-text"><%= link %> - <%= name %></div>
+      </div>
+      <div class="edit">
+        <input class="list-input" type="text" value="" />
+      </div>
+  </script>
+</body>
 </html>
