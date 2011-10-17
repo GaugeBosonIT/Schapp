@@ -23,3 +23,28 @@ c:\users\harry\documents\visual studio 2010\Projects\Schapp\Schapp\bin\Microsoft
 c:\users\harry\documents\visual studio 2010\Projects\Schapp\Schapp\obj\Debug\ResolveAssemblyReference.cache
 c:\users\harry\documents\visual studio 2010\Projects\Schapp\Schapp\obj\Debug\Schapp.dll
 c:\users\harry\documents\visual studio 2010\Projects\Schapp\Schapp\obj\Debug\Schapp.pdb
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Schapp.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Schapp.pdb
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\EntityDataModel.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\EntityFramework.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.ApplicationServer.Http.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.ApplicationServer.HttpEnhancements.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Data.Spatial.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Json.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Net.Http.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Net.Http.Formatting.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Net.Http.Formatting.OData.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Runtime.Serialization.Internal.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Server.Common.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.ServiceModel.Internal.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\System.Data.OData.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\EntityFramework.xml
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.ApplicationServer.Http.xml
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.ApplicationServer.HttpEnhancements.xml
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Json.xml
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Net.Http.xml
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Net.Http.Formatting.xml
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\bin\Microsoft.Net.Http.Formatting.OData.xml
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\obj\Debug\ResolveAssemblyReference.cache
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\obj\Debug\Schapp.dll
+D:\home\Martin\Documents\work\apache\Schapp\Schapp\obj\Debug\Schapp.pdb

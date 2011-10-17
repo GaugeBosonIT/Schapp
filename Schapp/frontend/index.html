@@ -20,116 +20,140 @@
     
     
     <script>
-      $(function(){
+      $(function ()
+      {
         window.SItem = Backbone.Model.extend({
-          defaults: function() {
+          defaults: function ()
+          {
             return {
-              name : 'New Item'
+              name: 'New Item'
             };
           }
         });
-        window.SItemList = Backbone.Collection.extend({model: SItem});
+        window.SItemList = Backbone.Collection.extend({ model: SItem });
 
         window.SList = Backbone.Model.extend({
-          initialize: function(){
+          initialize: function ()
+          {
             this.items = new SItemList;
-            this.items.url = '/api/items';
           }
-          ,url : function(){
+          , url: function ()
+          {
             var l = this.get('link');
-            return l?'/api/lists/'+l:'/api/lists';
+            return l ? '/api/lists/' + l : '/api/lists';
           }
-          ,isNew : function() {
+          , isNew: function ()
+          {
             return this.get('link') == null;
           }
-          ,defaults: function() {
+          , defaults: function ()
+          {
             return {
-              name : 'New List'
-              ,link : null
+              name: 'New List'
+              , link: null
             };
           }
         });
-         
-         
-        window.SListList = Backbone.Collection.extend({model: SList});
-        window.SLists = new SListList;
-        
+
         window.SListView = Backbone.View.extend({
-          tagName:  "li",className: "list"
-          ,template: _.template($('#list-template').html())
-          ,events: {
-            "click .list-back": "back",
+          el: $("#approot")
+          , attachel: $('#slist')
+          , template: _.template($('#list-template').html())
+          , events: {
             "click .list-text": "edit"
+            , "keypress #new-slist-name": "createOnEnter"
+            , "click .button": "createOnClick"
+
           }
-          ,initialize: function() {
+          , initialize: function ()
+          {
+            this.input = $("#new-slist-name");
             this.model.bind('change', this.render, this);
             this.model.bind('destroy', this.remove, this);
           }
-          ,render: function() {
-            $(this.el).html(this.template(this.model.toJSON()));
-            this.setText();
-            return this;
+          , render: function ()
+          {
+            var view = this;
+            if (!this.model.isNew()) {
+              listRouter.navigate("/" + this.model.get('link'));
+              $("#app-create-controls").fadeOut(200, function ()
+              {
+                $(view.attachel).html(view.template(view.model.toJSON()));
+                $(view.attachel).show();
+                view.setText();
+                view.input.val('');
+              });
+            } else {
+              $(this.attachel).hide();
+              $("#app-create-controls").fadeIn();
+            }
+            return null;
           }
-          ,setText: function() {
+          , setText: function ()
+          {
             var text = this.model.get('name');
             this.$('.list-text').text(text);
-            this.input = this.$('.list-input');
-            this.input.bind('blur', _.bind(this.close, this)).val(text);
+            this.nameinput = this.$('.list-input');
+            this.nameinput.bind('blur', _.bind(this.close, this)).val(text);
           }
-          ,edit: function() {
-            $(this.el).addClass("editing");
+          , edit: function ()
+          {
+            $(this.attachel).addClass("editing");
           }
-          ,close: function() {
-            this.model.save({name: this.input.val()});
-            $(this.el).removeClass("editing");
+          , close: function ()
+          {
+            this.model.save({ name: this.nameinput.val() });
+            $(this.attachel).removeClass("editing");
           }
-          ,updateOnEnter: function(e) {
+          , updateOnEnter: function (e)
+          {
             if (e.keyCode == 13) this.close();
           }
-          ,clear: function() {
-            this.model.destroy();
+          ,reset: function (link)
+          {
+            if (link) {
+              this.model.set({ 'link': link }, { silent: true });
+              this.model.fetch();
+            } else {
+              this.model.clear();
+            }
           }
-          ,back: function() {
-            this.remove();
-            SLists.remove(this.model);
-          }
-        });
-          
-          
-          
-        window.AppView = Backbone.View.extend({
-          el: $("#approot")
-          ,events: {
-            "keypress #new-slist-name":  "createOnEnter",
-            "click .button":  "createOnClick",
-          }
-          ,initialize: function() {
-            this.input  = this.$("#new-slist-name");
-            SLists.bind('add',  this.addOne, this);
-            SLists.bind('remove',  this.display, this);
-            //SLists.fetch();
-          }
-          ,addOne: function(slist) {
-            var slist = new SListView({model: slist}), _t = this;
-            $("#app-create-controls").fadeOut(200, function(){_t.$("#slists-list").append(slist.render().el);});
-          }
-          ,display:function(slist){
-            $("#app-create-controls").fadeIn();
-          }
-          ,createOnEnter: function(e) {
+          , createOnEnter: function (e)
+          {
             var text = this.input.val();
             if (!text || e.keyCode != 13) return;
-            SLists.create({name: text});
-            this.input.val('');
+            this.model.save({ name: text });
           }
-          ,createOnClick: function(e) {
+          , createOnClick: function (e)
+          {
             var text = this.input.val();
             if (!text) return;
-            SLists.create({name: text});
-            this.input.val('');
+            this.model.save({ name: text });
           }
-          });
-        window.App = new AppView;
+
+        });
+
+
+        window.App = new SListView({ model: new SList });
+
+        ListRouter = Backbone.Router.extend({
+          routes: { "/": "resetView"
+                  , "/:link": "openList"
+                  , "*other": "resetView"
+          }
+          , openList: function (link)
+          {
+            App.reset(link)
+          }
+          , resetView: function ()
+          {
+            App.reset();
+          }
+        });
+
+        listRouter = new ListRouter;
+        Backbone.history.start();
+        $('body').delegate(".listlink", "click", function (evt) { App.reset($(evt.target).attr("_href")) });
       });
     </script>
     
@@ -137,9 +161,10 @@
       .list-remove {padding: 1em; background-color:black;color:white;float:right}
       .list-back {float:right;cursor:pointer}
       .display {display:block;}
-      .edit {display:none;}
+      #app-create-controls, .edit {display:none;}
       .editing .display {display:none;}
       .editing .edit {display:block;}
+      .listlink{cursor:pointer}
     </style>
     
     
@@ -153,6 +178,7 @@
     <header class="row">
       <div class="twelvecol">
         <h1>Create your shopping list!</h1>
+        <a class="listlink" _href="I">sample list</a>
       </div>
     </header>
     
@@ -160,14 +186,14 @@
     
     <div id="approot" class="row">
       <div class="twelvecol" id="slists">
-          <ul id="slists-list"></ul>
+          <div id="slist"></div>
       </div>
       <div id="app-create-controls">
           <div class="fourcol fieldset">
             <input type="text" name="list-name" placeholder="list name" style="width:100%" id="new-slist-name" tabindex="1">
           </div>
           <div class="fourcol">
-              <div class="button active"><input type="button" name="start" value="New List" tabindex="3"></div>
+              <div class="button active"><input type="button" name="start" id="create-list" value="New List" tabindex="3"></div>
           </div>
       </div>
     </div>
@@ -176,7 +202,6 @@
     <script type="text/template" id="list-template">
         <div class="display">
           <div class="list-text"><%= link %> - <%= name %></div>
-          <a class="list-back">&laquo; back</a>
         </div>
         <div class="edit">
           <input class="list-input" type="text" value="" />
