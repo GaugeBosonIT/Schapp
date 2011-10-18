@@ -41,6 +41,10 @@
           if (this._items.length) attrs['item'] = this._items.toJSON();
           return attrs;
         }
+        , parseItems: function (model, resp) {
+          model._items.reset(_.map(resp.item, function (e) { return new ShoppingItem(e) }));
+          return resp;
+        }
         , url: function () {
           var l = this.get('link');
           return l ? '/api/lists/' + l : '/api/lists';
@@ -64,15 +68,12 @@
         }
         , render: function () {
           $(this.el).html(this.template(this.model.toJSON()));
-          $(this.el).prop("data-role", "collapsible");
-          $(this.el).trigger("create");
           return this;
         }
       });
 
       window.ShoppingListView = Backbone.View.extend({
         el: $('#slist')
-        , template: _.template($('#list-template').html())
         , events: {
           "click .list-name-text": "edit"
           , "click .list-name-input-confirm": "close"
@@ -80,19 +81,18 @@
           , "click .list-item-input-confirm": "addOnClick"
         }
         , initialize: function () {
+          this.nameinput = this.$('.list-name-input');
+          this.addinput = this.$('.list-item-input');
+          this.nameinput.bind('blur', _.bind(this.close, this));
           this.model._items.bind('add', this.addOne, this);
+          this.model._items.bind('reset', this.addAll, this);
         }
         , render: function () {
-          var html = $(this.el).html(this.template(this.model.toJSON())).trigger("create");
-          this.setText();
-          return html;
-        }
-        , setText: function () {
           var text = this.model.get('name');
           this.$('.list-name-text').text(text);
-          this.nameinput = this.$('.list-name-input');
-          this.nameinput.bind('blur', _.bind(this.close, this)).val(text);
-          this.addinput = this.$('.list-item-input');
+          this.nameinput.val(text);
+          this.addinput.val('');
+          return this.el;
         }
         , edit: function () {
           $(this.el).addClass("editing");
@@ -106,7 +106,10 @@
         }
         , addOne: function (item) {
           var view = new ShoppingItemView({ model: item });
-          this.$("#shoppinglist-items").append(view.render().el);
+          $("#shoppinglist-items").append(view.render().el);
+        }
+        , addAll: function () {
+          this.model._items.each(this.addOne);
         }
         , addOnClick: function (e) { return this.addOn(e, function (e) { return false; }); }
         , addOnEnter: function (e) { return this.addOn(e, function (e) { return e.keyCode != 13; }); }
@@ -117,53 +120,54 @@
           this.model.save();
           this.addinput.val('');
         }
+        , tearDown: function () {
+          this.model._items.unbind();
+          this.model.unbind();
+          this.nameinput.unbind();
+          this.el.unbind();
+          delete this.model._items;
+          $("#shoppinglist-items").empty();
+        }
       });
 
-
-
-
-
       window.MainAppView = Backbone.View.extend({
-        el: $("#approot")
+        el: $("#home")
         , events: {
           "keypress #new-slist-name": "createOnEnter"
           , "click .button": "createOnClick"
         }
         , initialize: function () {
           this.input = $("#new-slist-name");
-          this.shoppinglist_view = new ShoppingListView({ model: new ShoppingList });
-          this.shoppinglist_view.model.bind('change', this.render, this);
         }
         , render: function () {
-          if (!this.shoppinglist_view.model.isNew()) {
-            if (this.shoppinglist_view.model.hasChanged('link')) {
-              listRouter.navigate("list/" + this.shoppinglist_view.model.get('link'));
-            }
-            this.shoppinglist_view.render();
-            $.mobile.changePage($("#shoppinglist"), { transition: "slideup", changeHash: false, allowSamePageTransition: false, reverse: false, showLoadMsg: true });
-          } else {
-            $.mobile.changePage($("#home"), { transition: "slideup", changeHash: false, allowSamePageTransition: true, reverse: true, showLoadMsg: false });
-            this.input.val('');
+          if (this.shoppinglist_view.model.hasChanged('link')) {
+            listRouter.navigate("list/" + this.shoppinglist_view.model.get('link'));
           }
-          return null;
+          this.shoppinglist_view.render();
+          $.mobile.changePage($("#shoppinglist"), { transition: "slideup", changeHash: false, allowSamePageTransition: false, reverse: false, showLoadMsg: true });
         }
-        , reset: function (link) {
-          if (link) {
-            this.shoppinglist_view.model.set({ 'link': link }, { silent: true });
-            this.shoppinglist_view.model.fetch();
-          } else {
-            this.shoppinglist_view.model.clear();
+        , reset: function () {
+          if (this.shoppinglist_view) {
+            this.shoppinglist_view.tearDown();
+            delete this.shoppinglist_view;
           }
+          $(this.el).removeClass("hidden");
+          $.mobile.changePage($("#home"), { transition: "slideup", changeHash: false, allowSamePageTransition: true, reverse: true, showLoadMsg: false });
+          this.input.val('');
         }
-        , createOnEnter: function (e) {
+        , createOnClick: function (e) { return this.createOn(e, function (e) { return false; }); }
+        , createOnEnter: function (e) { return this.createOn(e, function (e) { return e.keyCode != 13; }); }
+        , createOn: function (e, filter) {
           var text = this.input.val();
-          if (!text || e.keyCode != 13) return;
-          this.shoppinglist_view.model.save({ name: text });
+          if (!text || filter(e)) return;
+          this.shoppinglist_view = new ShoppingListView({ model: new ShoppingList({ name: text }) });
+          this.shoppinglist_view.model.bind('change', this.render, this);
+          this.shoppinglist_view.model.save();
         }
-        , createOnClick: function (e) {
-          var text = this.input.val();
-          if (!text) return;
-          this.shoppinglist_view.model.save({ name: text });
+        , openList: function (link) {
+          this.shoppinglist_view = new ShoppingListView({ model: new ShoppingList({ 'link': link }) });
+          this.shoppinglist_view.model.bind('change', this.render, this);
+          this.shoppinglist_view.model.fetch({ success: this.shoppinglist_view.model.parseItems });
         }
       });
 
@@ -176,7 +180,7 @@
                   , "*other": "resetView"
         }
         , openList: function (link) {
-          App.reset(link);
+          App.openList(link);
         }
         , resetView: function () {
           App.reset();
@@ -197,7 +201,7 @@
   </style>
 </head>
 <body>
-  <div data-role="page" id="home">
+  <div data-role="page" id="home" class="hidden">
     <div data-role="header" data-position="inline">
       <h1>
         Create your shopping list!</h1>
@@ -224,9 +228,7 @@
         Edit Shopping List!</h1>
       <a href="#home" data-icon="check" rel="external">send by email</a>
     </div>
-    <div id="slist" data-role="content"></div>
-  </div>
-  <script type="text/template" id="list-template">
+    <div id="slist" data-role="content">
       <h4>List:</h4>
       <div class="display">
         <h2 class="list-name-text"><%= name %></h2>
@@ -237,11 +239,12 @@
       </div>
       <br/>
       <br/>
+      <h1>Add Items</h1>
       <ul id="shoppinglist-items"></ul>
-      <h1>Add Items<h1/>
       <input class="list-item-input" type="text" value="" />
-      <input class="list-item-input-confirm" type="button" value="add" />
-  </script>
+      <input class="list-item-input-confirm" type="button" value="add" />      
+    </div>
+  </div>
 
   <script type="text/template" id="item-template">
       <h3><%= name %></h3>

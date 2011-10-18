@@ -32,7 +32,7 @@ namespace Schapp.APIs
          }
 
         [OperationContract]
-        [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, UriTemplate = "")]
+        [WebInvoke(Method = "PUT", RequestFormat = WebMessageFormat.Json, UriTemplate = "/{l}")]
         public SList Create(SList r)
         {
            return (SList)orm.SetObject(r).o;
