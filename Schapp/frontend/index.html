@@ -42,7 +42,7 @@
           this._items = new ShoppingItemList;
           this._items.bind('change', this.saveChanges, this);
         }
-        , saveChanges: function () {this.save()}
+        , saveChanges: function () { this.save() }
         , toJSON: function () {
           var attrs = _.clone(this.attributes);
           if (this._items.length) attrs['item'] = this._items.toJSON();
@@ -82,7 +82,7 @@
       });
 
       window.ShoppingListView = Backbone.View.extend({
-        el: $('#slist')
+        el: $('#shoppinglist')
         , events: {
           "click .list-name-text": "edit"
           , "click .list-name-input-confirm": "close"
@@ -97,6 +97,7 @@
           this.model._items.bind('reset', this.addAll, this);
         }
         , render: function () {
+          this.$(".emailSender").prop('href', "#send/" + this.model.get('link'));
           var text = this.model.get('name');
           this.$('.list-name-text').text(text);
           this.nameinput.val(text);
@@ -187,13 +188,15 @@
           this.shoppinglist_view.model.bind('change', this.render, this);
           this.shoppinglist_view.model.fetch({ success: this.shoppinglist_view.model.parseItems });
         }
+        , sendEmail: function (link) {
+          $.mobile.changePage($("#sendEmail"), { transition: "slideup", changeHash: false, allowSamePageTransition: true, reverse: true, showLoadMsg: false });
+        }
       });
-
-
       window.App = new MainAppView();
 
       ListRouter = Backbone.Router.extend({
         routes: { "home": "resetView"
+                  , "send/:link": "sendEmail"
                   , "list/:link": "openList"
                   , "*other": "resetView"
         }
@@ -203,8 +206,10 @@
         , resetView: function () {
           App.reset();
         }
+        , sendEmail: function (link) {
+          App.sendEmail(link);
+        }
       });
-
       listRouter = new ListRouter;
       Backbone.history.start();
     });
@@ -244,7 +249,7 @@
       <a href="#home" rel="external">back</a>
       <h1>
         Edit Shopping List!</h1>
-      <a href="#home" data-icon="check" rel="external">send by email</a>
+      <a href="#" data-icon="check" rel="external" class="emailSender">send by email</a>
     </div>
     <div id="slist" data-role="content">
       <h4>List:</h4>
@@ -258,7 +263,7 @@
       <br/>
       <br/>
       <hr />
-			<div  data-role="fieldcontain">
+			<div data-role="fieldcontain">
 			 	<fieldset data-role="controlgroup">
 					<legend>Items:</legend>
           <ul id="shoppinglist-items"></ul>
@@ -276,11 +281,27 @@
           <label for="list-price-input">Price:</label>
           <input class="list-price-input item-input-field" id="list-price-input" type="number" value="0.0" _default="0.0" />
       </div>	
-
-
       <input class="list-item-input-confirm" type="button" value="add" />      
     </div>
   </div>
+
+    <div data-role="page" id="sendEmail" data-title="Send Shopping List">
+      <div data-role="header">
+        <a href="javascript:history.back()" rel="external">back</a>
+        <h1>Send Shopping List!</h1>
+      </div>
+      <div data-role="content">
+        <div data-role="fieldcontain">
+            <label for="list-qty-input">Send to:</label>
+            <input class="email-input email-input-field" id="email" type="email" value="" _default=""/>
+        </div>	
+        <input class="email-input-confirm" type="button" value="send" />
+      </div>
+    </div>
+
+
+
+
 
   <script type="text/template" id="item-template">
       <div>
