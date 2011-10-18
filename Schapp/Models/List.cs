@@ -62,5 +62,17 @@ namespace Schapp.Models
 
         }
 
+        [DataContract]
+        public class Mail
+        {
+            [DataMember]
+            public string link { get; set; }
+
+            [DataMember]
+            public string email { get; set; }
+        
+        
+        }
+
 
 }

@@ -28,7 +28,12 @@ namespace Schapp
 
             var config = new HttpConfiguration() { EnableTestClient = true };
 
+            routes.Add(new ServiceRoute("api/lists/send", new HttpServiceHostFactory() { Configuration = config }, typeof(SendEmail)));
+            
             routes.Add( new ServiceRoute("api/lists", new HttpServiceHostFactory() { Configuration = config }, typeof(ListsAPI)));
+
+
+
 
             routes.MapRoute(
                 "Default", // Route name
