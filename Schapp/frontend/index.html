@@ -25,6 +25,17 @@
   <script src="http://code.jquery.com/mobile/1.0rc1/jquery.mobile-1.0rc1.min.js"></script>
   <script>
     $(function () {
+
+      /* -------------------------------------------- ------ -------------------------------------------- */
+      /* -------------------------------------------- MODELS -------------------------------------------- */
+      /* -------------------------------------------- ------ -------------------------------------------- */
+      window.SendModel = Backbone.Model.extend({
+        defaults: function () {
+          return { email: null, link: null };
+        }
+        , url: function () { return '/api/lists/send'; }
+      });
+
       window.ShoppingItem = Backbone.Model.extend({
         defaults: function () {
           return { name: 'New Item', price: 0.0, shop: "New Shop", quantity: 1, id: Math.random(), done: false };
@@ -67,12 +78,19 @@
         }
       });
 
+
+      /* -------------------------------------------- ----- -------------------------------------------- */
+      /* -------------------------------------------- VIEWS -------------------------------------------- */
+      /* -------------------------------------------- ----- -------------------------------------------- */
+
       window.ShoppingItemView = Backbone.View.extend({
         tagName: "div"
         , template: _.template($('#item-template').html())
-        , initialize: function () { }
+        , initialize: function () {
+        }
         , toggleDone: function (e) {
           this.model.set({ "done": !this.model.get("done") });
+          $(this.el).toggleClass("done");
         }
         , render: function () {
           $(this.el).html(this.template(this.model.toJSON()));
@@ -82,12 +100,13 @@
       });
 
       window.ShoppingListView = Backbone.View.extend({
-        el: $('#shoppinglist')
+        el: $('#shoppingList-page')
         , events: {
           "click .list-name-text": "edit"
           , "click .list-name-input-confirm": "close"
           , "keypress .list-item-input": "addOnEnter"
           , "click .list-item-input-confirm": "addOnClick"
+          , "click .toggleHideDone": "toggleHideDone"
         }
         , initialize: function () {
           this.nameinput = this.$('.list-name-input');
@@ -95,6 +114,10 @@
           this.nameinput.bind('blur', _.bind(this.close, this));
           this.model._items.bind('add', this.addOne, this);
           this.model._items.bind('reset', this.addAll, this);
+          this.$("input.toggleHideDone").bind("change", _.bind(this.toggleHideDone, this));
+        }
+        , toggleHideDone: function () {
+          $("#shoppinglist-items").toggleClass("hideDone");
         }
         , render: function () {
           this.$(".emailSender").prop('href', "#send/" + this.model.get('link'));
@@ -106,6 +129,7 @@
         }
         , edit: function () {
           $(this.el).addClass("editing");
+          this.nameinput.focus();
         }
         , close: function () {
           this.model.save({ name: this.nameinput.val() });
@@ -144,10 +168,60 @@
           this.model.unbind();
           this.nameinput.unbind();
           this.el.unbind();
+          this.$("input.toggleHideDone").unbind();
           delete this.model._items;
           $("#shoppinglist-items").empty();
         }
       });
+
+      window.SendView = Backbone.View.extend({
+        el: $('#sendEmail-page')
+        , events: {
+          "click .email-input-confirm": "sendOnClick"
+          , "keypress .email-input-field": "sendOnEnter"
+        }
+        , initialize: function () {
+          this.input = this.$('.email-input-field');
+          if (!$("#validation-plugin").length) {
+            var script = document.createElement('script');
+            script.type = "text/javascript";
+            script.id = "validation-plugin";
+            script.src = "static/js/jquery.validate.min.js";
+            $("body").append(script);
+          }
+
+          $("#sendEmail-form").validate({
+            rules: { 'email-input-field': { required: true, email: true} },
+            messages: { 'email-input-field': "Please enter a valid email address" }
+          });
+
+        }
+        , render: function () {
+          this.$(".shoppingList-link").prop('href', "#list/" + this.model.get('link'));
+        }
+        , sendOnClick: function (e) { return this.sendOn(e, function (e) { return false; }); }
+        , sendOnEnter: function (e) { return this.sendOn(e, function (e) { return e.keyCode != 13; }); }
+        , sendOn: function (e, filter) {
+          var email = this.input.val(), view = this;
+          if (!$("#sendEmail-form").valid() || filter(e)) return;
+          this.model.save({ email: email, link: document.location.href.replace('send', 'list') }
+            , {
+              error: function (model, error) {
+                alert(error);
+              }
+              , success: function () {
+                $.mobile.changePage($("#shoppingList-page"), { transition: "slideup", changeHash: false, allowSamePageTransition: false, reverse: false, showLoadMsg: true });
+              }
+            });
+        }
+        , tearDown: function () {
+          this.model.unbind();
+          this.el.unbind();
+        }
+      });
+      /* -------------------------------------------- --- -------------------------------------------- */
+      /* -------------------------------------------- APP -------------------------------------------- */
+      /* -------------------------------------------- --- -------------------------------------------- */
 
       window.MainAppView = Backbone.View.extend({
         el: $("#home")
@@ -163,12 +237,16 @@
             listRouter.navigate("list/" + this.shoppinglist_view.model.get('link'));
           }
           this.shoppinglist_view.render();
-          $.mobile.changePage($("#shoppinglist"), { transition: "slideup", changeHash: false, allowSamePageTransition: false, reverse: false, showLoadMsg: true });
+          $.mobile.changePage($("#shoppingList-page"), { transition: "slideup", changeHash: false, allowSamePageTransition: false, reverse: false, showLoadMsg: true });
         }
         , reset: function () {
           if (this.shoppinglist_view) {
             this.shoppinglist_view.tearDown();
             delete this.shoppinglist_view;
+          }
+          if (this.send_view) {
+            this.send_view.tearDown();
+            delete this.send_view;
           }
           $(this.el).removeClass("hidden");
           $.mobile.changePage($("#home"), { transition: "slideup", changeHash: false, allowSamePageTransition: true, reverse: true, showLoadMsg: false });
@@ -189,7 +267,13 @@
           this.shoppinglist_view.model.fetch({ success: this.shoppinglist_view.model.parseItems });
         }
         , sendEmail: function (link) {
-          $.mobile.changePage($("#sendEmail"), { transition: "slideup", changeHash: false, allowSamePageTransition: true, reverse: true, showLoadMsg: false });
+          if (!this.shoppinglist_view) {
+            listRouter.navigate("list/" + link);
+            this.openList(link);
+          }
+          this.send_view = new SendView({ model: new SendModel({ 'link': link }) });
+          this.send_view.render();
+          $.mobile.changePage($("#sendEmail-page"), { transition: "slideup", changeHash: false, allowSamePageTransition: true, reverse: true, showLoadMsg: false });
         }
       });
       window.App = new MainAppView();
@@ -216,11 +300,9 @@
   </script>
   <style>
       .list-remove {padding: 1em; background-color:black;color:white;float:right}
-      .editing .editor
-      , .display {display:block;}
-      .hidden
-      , .editing .display
-      , .editor {display:none;}
+      .editing .editor, .display {display:block;}
+      .hidden, .editing .display, .editor {display:none;}
+      .hideDone .done {display:none}
   </style>
 </head>
 <body>
@@ -244,7 +326,7 @@
     </div>
   </div>
 
-  <div data-role="page" id="shoppinglist" data-title="Edit Shopping List">
+  <div data-role="page" id="shoppingList-page" data-title="Edit Shopping List">
     <div data-role="header">
       <a href="#home" rel="external">back</a>
       <h1>
@@ -260,13 +342,18 @@
         <input class="list-name-input" type="text" value="" />
         <input class="list-name-input-confirm" type="button" value="save" />
       </div>
+      <div data-role="fieldcontain">
+        <input type="checkbox" id="toggleHideDone" class="toggleHideDone" checked />
+			  <label for="toggleHideDone">Show Bought Items</label>
+      </div>
+
       <br/>
       <br/>
       <hr />
 			<div data-role="fieldcontain">
 			 	<fieldset data-role="controlgroup">
 					<legend>Items:</legend>
-          <ul id="shoppinglist-items"></ul>
+          <div id="shoppinglist-items" class="hideDone"></div>
         </fieldset>
       </div>
       <div data-role="fieldcontain">
@@ -285,17 +372,19 @@
     </div>
   </div>
 
-    <div data-role="page" id="sendEmail" data-title="Send Shopping List">
+    <div data-role="page" id="sendEmail-page" data-title="Send Shopping List">
       <div data-role="header">
-        <a href="javascript:history.back()" rel="external">back</a>
+        <a href="#" rel="external" class="shoppingList-link">back</a>
         <h1>Send Shopping List!</h1>
       </div>
       <div data-role="content">
+        <form id="sendEmail-form">
         <div data-role="fieldcontain">
-            <label for="list-qty-input">Send to:</label>
-            <input class="email-input email-input-field" id="email" type="email" value="" _default=""/>
+            <label for="email-input-field">Send to:</label>
+            <input class="input-field email-input-field" id="email-input-field" type="email" value="" _default="" required="true"/>
         </div>	
         <input class="email-input-confirm" type="button" value="send" />
+        </form>
       </div>
     </div>
 
@@ -304,15 +393,13 @@
 
 
   <script type="text/template" id="item-template">
-      <div>
-        <input type="checkbox" name="checkbox-<%= id %>" id="checkbox-<%= id %>" class="custom toggleDone" <% if(done){print("checked");} %>/>
+        <input type="checkbox" name="checkbox-<%= id %>" id="checkbox-<%= id %>" class="custom toggleDone <% if(done){print("done");} %>" <% if(done){print("checked");} %>/>
 				<label for="checkbox-<%= id %>">
           <%= quantity %> x <%= name %>
           <% if (price!=0) { %>
              for <% print(parseFloat(price).toFixed(2)); %>
           <% } %>
         </label>
-      </div>
   </script>
 
 

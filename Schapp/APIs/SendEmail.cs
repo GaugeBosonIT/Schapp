@@ -22,8 +22,8 @@ namespace Schapp.APIs
 
 
        [OperationContract]
-       [WebInvoke(Method = "POST", RequestFormat = WebMessageFormat.Json, UriTemplate = "")]
-        public void SendMail(Mail m)
+       [WebInvoke(Method = "POST", RequestFormat = WebMessageFormat.Json, UriTemplate = "", ResponseFormat = WebMessageFormat.Json)]
+       public Mail SendMail(Mail m)
         {
             MailMessage mail = new MailMessage();
             SmtpClient SmtpServer = new SmtpClient(SmtpClient);
@@ -37,6 +37,7 @@ namespace Schapp.APIs
             SmtpServer.EnableSsl = true;
 
             SmtpServer.Send(mail);
+            return m;
          }
             
 
