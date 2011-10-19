@@ -27,3 +27,5 @@ _ReSharper.*
 /schapp/obj/debug/Schapp.pdb
 /schapp/obj/debug/Schapp.pdb
 /Schapp/obj/Debug/Schapp.pdb
+/Schapp.sln
+/Schapp/obj/Debug/ResolveAssemblyReference.cache

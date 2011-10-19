@@ -60,6 +60,10 @@ namespace Schapp.Models
             [XmlAttribute("quantity")]
             public string quantity { get; set; }
 
+            [DataMember]
+            [XmlAttribute("done")]
+            public bool done { get; set; }
+
         }
 
         [DataContract]
