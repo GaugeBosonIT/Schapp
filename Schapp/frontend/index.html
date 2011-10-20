@@ -86,16 +86,54 @@
       window.ShoppingItemView = Backbone.View.extend({
         tagName: "div"
 		    , template: _.template($('#item-template').html())
+        , events: {
+          "click .checkitem": "toggleDone"
+          , "click .edititem": "toggleEdit"
+          , "click .deleteitem": "deleteItem"
+          , "click .item-save-confirm": "saveItem"
+        }
 		    , initialize: function () {
 		    }
+        , saveItem: function () {
+          this.model.set({ "name": this.$(".item-name-input").val(), "price": this.$(".item-price-input").val(), "quantity": this.$(".item-qty-input").val() });
+          $(this.render().el).trigger("create");
+        }
+        , deleteItem: function () {
+          if (confirm("Really delete '" + this.model.get("name") + "'?")) {
+            this.model.destroy();
+            this.remove();
+          }
+        }
+        , closeEdit: function () {
+          this.$('.editFields').addClass('hidden');
+          this.$('.edititem').removeClass('ui-btn-active');
+          //this.$('.edititem').prop("data-icon", "arrow-d").trigger("refresh");
+        }
+        , openEdit: function () {
+          this.$('.editFields').removeClass('hidden');
+          this.$('.edititem').addClass('ui-btn-active');
+          //this.$('.edititem').prop("data-icon", "arrow-u").trigger("refresh");
+        }
+        , toggleEdit: function (e) {
+          if (this.$('.editFields').hasClass('hidden')) {
+            this.openEdit();
+          } else {
+            this.closeEdit();
+          }
+        }
 		    , toggleDone: function (e) {
 		      this.model.set({ "done": !this.model.get("done") });
-		      if (this.model.get("done")) { $(this.el).addClass("done"); } else { $(this.el).removeClass("done"); }
-
+		      if (this.model.get("done")) {
+		        $(this.el).addClass("done");
+		        this.$('.checkitem').addClass('ui-btn-active');
+		        this.closeEdit();
+		      } else {
+		        $(this.el).removeClass("done");
+		        this.$('.checkitem').removeClass('ui-btn-active');
+		      }
 		    }
 		    , render: function () {
 		      $(this.el).html(this.template(this.model.toJSON()));
-		      this.$("input[type=checkbox]").bind("change", _.bind(this.toggleDone, this));
 		      return this;
 		    }
       });
@@ -115,8 +153,13 @@
 		      this.nameinput.bind('blur', _.bind(this.close, this));
 		      this.model._items.bind('add', this.addOne, this);
 		      this.model._items.bind('reset', this.addAll, this);
+		      this.model._items.bind('destroy', this.removeItem, this);
 		      this.$("input.toggleHideDone").bind("change", _.bind(this.toggleHideDone, this));
 		    }
+        , removeItem: function (model) {
+          this.model._items.remove(model);
+          this.model.save();
+        }
 		    , toggleHideDone: function () {
 		      $("#shoppinglist-items").toggleClass("hideDone");
 		    }
@@ -308,11 +351,15 @@
     .display {text-align:center}
     .hidden, .editing .display, .editor { display: none; }
     .invisible {visibility:hidden;}
-    .done { text-decoration: line-through; }
     .hideDone .done { display: none; }
     label.error { clear: both; display: block; padding-left: 22.2%; padding-top: 1em; }
     .ui-field-contain {padding: 0.5em 0;}
-    #shoppinglist-items .ui-btn-corner-all {border-radius: 0;}
+    #shoppinglist-items > div {margin-top:1em;margin-bottom:1em}
+    
+    
+    #shoppinglist-items .listbutton {width: 14%;}
+    #shoppinglist-items .checkitem {width:70%;}
+    
     
     @media all and (max-width: 450px){
         label.error { padding-left: 0;}
@@ -341,7 +388,7 @@
   </div>
   <div data-role="page" id="shoppingList-page" data-title="Edit List - Schapp">
     <div data-role="header">
-      <a href="#home" rel="external">back</a>
+      <a href="#home" rel="external" data-icon="back">back</a>
       <h1>Edit List!</h1>
       <a href="#" data-icon="check" rel="external" class="emailSender">send</a>
     </div>
@@ -358,12 +405,8 @@
         <label for="toggleHideDone" data-theme="a">Show Bought Items</label>
       </div>
 
-      <div data-role="fieldcontain">
-        <fieldset data-role="controlgroup">
-          <legend>Items:</legend>
-          <div id="shoppinglist-items" class="hideDone"></div>
-        </fieldset>
-      </div>
+      <div id="shoppinglist-items" class="hideDone"></div>
+
       <div data-role="fieldcontain">
         <label for="list-item-input">New Item:</label>
         <input class="list-item-input item-input-field" id="list-item-input" type="text" value="" _default="" />
@@ -397,13 +440,28 @@
     </div>
   </div>
   <script type="text/template" id="item-template">
-		<input type="checkbox" name="checkbox-<%= id %>" id="checkbox-<%= id %>" class="custom toggleDone <% if(done){print("done");} %>" <% if(done){print("checked");} %>/>
-				<label for="checkbox-<%= id %>">
-		  <%= quantity %> x <%= name %>
-		  <% if (price!=0) { %>
-			 for <% print(parseFloat(price).toFixed(2)); %>
-		  <% } %>
-		</label>
+    <fieldset data-role="controlgroup" data-type="horizontal" class="<% if (done) print("done"); %>">
+      <a class="listbutton checkitem <% if (done) print("ui-btn-active"); %>" data-role="button" data-icon="check"> <%= quantity %> x <%= name %><% if (price!=0) { %> for <% print(parseFloat(price).toFixed(2)); %><% } %></a>
+      <a class="listbutton edititem" data-role="button" data-icon="arrow-d">&nbsp;</a>
+      <a class="listbutton deleteitem" data-role="button" data-icon="delete">&nbsp;</a>
+    </fieldset>
+    <div class="hidden editFields" data-role="controlgroup" data-theme="a">
+      <div data-role="fieldcontain">
+        <label for="list-item-input-<%= id %>">Item:</label>
+        <input class="item-name-input item-input-field" id="list-item-input-<%= id %>" type="text" value="<%= name %>" _default="<%= name %>" />
+      </div>
+      <div data-role="fieldcontain">
+        <label for="list-qty-input-<%= id %>">Quantity:</label>
+        <input class="item-qty-input item-input-field" id="list-qty-input-<%= id %>" type="number" value="<%= quantity %>" _default="1" />
+      </div>
+      <div data-role="fieldcontain">
+        <label for="list-price-input-<%= id %>">Price:</label>
+        <input class="item-price-input item-input-field" id="list-price-input-<%= id %>" type="number" value="<% print(parseFloat(price).toFixed(2)); %>" _default="0.0" />
+      </div>
+      <div data-role="fieldcontain">
+        <a class="item-save-confirm" type="button" data-role="button" data-theme="a">save</a>
+      </div>
+    </div>
   </script>
 </body>
 </html>
