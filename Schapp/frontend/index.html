@@ -85,7 +85,7 @@
 	    /* -------------------------------------------- ----- -------------------------------------------- */
 
 	    window.ShoppingItemView = Backbone.View.extend({
-	      tagName: "div"
+	      tagName: "div", className: "draggable"
 				, template: _.template($('#item-template').html())
 				, events: {
 				  "click .checkitem": "toggleDone"
@@ -133,6 +133,11 @@
 				}
 				, render: function () {
 				  $(this.el).html(this.template(this.model.toJSON()));
+				  $(this.el).draggable({ handle: ".dragHandle", revert: true });
+				  $(this.el).bind("dragstart", function (event, ui) {
+				    alert("this drag start");
+				    event.stopPropagation();
+				  });
 				  return this;
 				}
 	    });
@@ -248,12 +253,12 @@
 				, render: function () {
 				  var view = this;
 				  this.$(".shoppingList-link").click(
-              function () {
-                listRouter.navigate("list/" + view.model.get('link'));
-                $.mobile.changePage($("#shoppingList-page"), { transition: "slide", changeHash: false, allowSamePageTransition: false, reverse: true, showLoadMsg: true });
-                view.tearDown();
-              }
-           );
+							function () {
+							  listRouter.navigate("list/" + view.model.get('link'));
+							  $.mobile.changePage($("#shoppingList-page"), { transition: "slide", changeHash: false, allowSamePageTransition: false, reverse: true, showLoadMsg: true });
+							  view.tearDown();
+							}
+					 );
 				}
 				, sendOnClick: function (e) { return this.sendOn(e, function (e) { return false; }); }
 				, sendOnEnter: function (e) { return this.sendOn(e, function (e) { return e.keyCode != 13; }); }
@@ -354,10 +359,10 @@
 				  this.shoppinglist_view = new ShoppingListView({ model: new ShoppingList({ name: text }) });
 				  this.shoppinglist_view.model.bind('change', this.render, this);
 				  this.shoppinglist_view.model.save({}, { success:
-            function (model) {
-              view.configStore.addList(model.get("link"), model.get("name"));
-              this.$(".error").addClass("hidden");
-            }
+						function (model) {
+						  view.configStore.addList(model.get("link"), model.get("name"));
+						  this.$(".error").addClass("hidden");
+						}
 				  });
 				}
 				, openList: function (link) {
@@ -398,7 +403,7 @@
 	  });
 	</script>
 	<style>
-	   label.error { clear: both; display: block; padding-left: 22.2%; padding-top: 1em; }
+		 label.error { clear: both; display: block; padding-left: 22.2%; padding-top: 1em; }
 		.list-remove { padding: 1em; background-color: black; color: white; float: right; }
 		.editing .editor, .display { display: block; }
 		.display {text-align:center}
@@ -407,9 +412,10 @@
 		.hideDone .done { display: none; }
 		.ui-field-contain {padding: 0.5em 0;}
 		#shoppinglist-items > div {margin-top:1em;margin-bottom:1em}
-		
+		.draggable {z-index:22}
 		#shoppinglist-items .listbutton {width: 15%;margin:0 -6px 0 -1px;}
-		#shoppinglist-items .checkitem {width:85%;margin:0 -6px 0 -1px;}
+		#shoppinglist-items .checkitem {width:75%;margin:0 -6px 0 -1px;}
+		#shoppinglist-items .dragHandle {width:10%;margin:0 -6px 0 -1px;}
 		#shoppinglist-items .item-change-button {width:60%;margin:0 -6px 0 -1px;}
 		#shoppinglist-items .item-change-button.last {width:40%;margin:0 -6px 0 -1px;}
 		.ui-bar-c {padding: 2% 3%}
@@ -436,7 +442,7 @@
 				<div class="fieldcontain">
 					<label for="new-slist-name">List Name:</label>
 					<input type="text" name="list-name" placeholder="enter new list name here" id="new-slist-name" tabindex="1" required>
-				  <label class="error hidden">You need to enter a list name!</label>
+					<label class="error hidden">You need to enter a list name!</label>
 				</div>
 				<div class="fieldcontain">
 					<div class="button active">
@@ -505,8 +511,9 @@
 	</div>
 	<script type="text/template" id="item-template">
 		<fieldset data-role="controlgroup" data-type="horizontal" class="<% if (done) print("done"); %>">
-			<a class="listbutton checkitem <% if (done) print("ui-btn-active"); %>" data-role="button" data-icon="check"> <%= quantity %> x <%= name %><% if (price!=0) { %> for <% print(parseFloat(price).toFixed(2)); %><% } %></a>
-			<a class="listbutton edititem" data-role="button" data-icon="arrow-d">&nbsp;</a>
+			<a class="listbutton dragHandle" data-role="button">X</a>
+      <a class="listbutton checkitem <% if (done) print("ui-btn-active"); %>" data-role="button" data-icon="check"> <%= quantity %> x <%= name %><% if (price!=0) { %> for <% print(parseFloat(price).toFixed(2)); %><% } %></a>
+      <a class="listbutton edititem" data-role="button" data-icon="arrow-d">&nbsp;</a>
 		</fieldset>
 		<div class="hidden editFields ui-bar-d" >
 			<div data-role="fieldcontain">
@@ -530,5 +537,7 @@
 	<script type="text/template" id="homelist-template">
 		<li><a href="#list/<%= link %>" rel="external"><%= name %></a></li>
 	</script>
+
+  <script src="static/js/jquery-ui-1.8.16.custom.min.js"></script>
 </body>
 </html>
