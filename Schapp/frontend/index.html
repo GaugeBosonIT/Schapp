@@ -85,7 +85,7 @@
 	    /* -------------------------------------------- ----- -------------------------------------------- */
 
 	    window.ShoppingItemView = Backbone.View.extend({
-	      tagName: "div", className: "draggable"
+	      tagName: "div"
 				, template: _.template($('#item-template').html())
 				, events: {
 				  "click .checkitem": "toggleDone"
@@ -133,11 +133,6 @@
 				}
 				, render: function () {
 				  $(this.el).html(this.template(this.model.toJSON()));
-				  $(this.el).draggable({ handle: ".dragHandle", revert: true });
-				  $(this.el).bind("dragstart", function (event, ui) {
-				    alert("this drag start");
-				    event.stopPropagation();
-				  });
 				  return this;
 				}
 	    });
@@ -412,10 +407,8 @@
 		.hideDone .done { display: none; }
 		.ui-field-contain {padding: 0.5em 0;}
 		#shoppinglist-items > div {margin-top:1em;margin-bottom:1em}
-		.draggable {z-index:22}
 		#shoppinglist-items .listbutton {width: 15%;margin:0 -6px 0 -1px;}
 		#shoppinglist-items .checkitem {width:75%;margin:0 -6px 0 -1px;}
-		#shoppinglist-items .dragHandle {width:10%;margin:0 -6px 0 -1px;}
 		#shoppinglist-items .item-change-button {width:60%;margin:0 -6px 0 -1px;}
 		#shoppinglist-items .item-change-button.last {width:40%;margin:0 -6px 0 -1px;}
 		.ui-bar-c {padding: 2% 3%}
@@ -511,7 +504,6 @@
 	</div>
 	<script type="text/template" id="item-template">
 		<fieldset data-role="controlgroup" data-type="horizontal" class="<% if (done) print("done"); %>">
-			<a class="listbutton dragHandle" data-role="button">X</a>
       <a class="listbutton checkitem <% if (done) print("ui-btn-active"); %>" data-role="button" data-icon="check"> <%= quantity %> x <%= name %><% if (price!=0) { %> for <% print(parseFloat(price).toFixed(2)); %><% } %></a>
       <a class="listbutton edititem" data-role="button" data-icon="arrow-d">&nbsp;</a>
 		</fieldset>
@@ -538,6 +530,5 @@
 		<li><a href="#list/<%= link %>" rel="external"><%= name %></a></li>
 	</script>
 
-  <script src="static/js/jquery-ui-1.8.16.custom.min.js"></script>
 </body>
 </html>
