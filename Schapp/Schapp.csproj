@@ -104,6 +104,7 @@
   <ItemGroup>
     <Compile Include="APIs\ListsAPI.cs" />
     <Compile Include="APIs\SendEmail.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="DataAccess\ORM.cs" />
     <Compile Include="DataAccess\Proc.cs" />
     <Compile Include="Global.asax.cs">
@@ -140,25 +141,24 @@
     <Content Include="Content\themes\base\jquery.ui.slider.css" />
     <Content Include="Content\themes\base\jquery.ui.tabs.css" />
     <Content Include="Content\themes\base\jquery.ui.theme.css" />
-    <Content Include="frontend\apple-touch-icon-114x114-precomposed.png" />
-    <Content Include="frontend\apple-touch-icon-57x57-precomposed.png" />
-    <Content Include="frontend\apple-touch-icon-72x72-precomposed.png" />
-    <Content Include="frontend\apple-touch-icon-precomposed.png" />
-    <Content Include="frontend\apple-touch-icon.png" />
-    <Content Include="frontend\favicon.ico" />
-    <Content Include="frontend\index.html" />
-    <Content Include="frontend\loading.html" />
-    <Content Include="frontend\logo.png" />
-    <Content Include="frontend\static\css\jqm-docs.css" />
-    <Content Include="frontend\static\css\jquery.mobile.css" />
-    <Content Include="frontend\static\css\styles.css" />
-    <Content Include="frontend\static\js\backbone-localstorage.js" />
-    <Content Include="frontend\static\js\backbone-min.js" />
-    <Content Include="frontend\static\js\backbone.js" />
-    <Content Include="frontend\static\js\jquery.mobile.js" />
-    <Content Include="frontend\static\js\json2.js" />
-    <Content Include="frontend\static\js\underscore-min.js" />
-    <Content Include="frontend\static\js\underscore.js" />
+    <Content Include="Views\Shared\apple-touch-icon-114x114-precomposed.png" />
+    <Content Include="Views\Shared\apple-touch-icon-57x57-precomposed.png" />
+    <Content Include="Views\Shared\apple-touch-icon-72x72-precomposed.png" />
+    <Content Include="Views\Shared\apple-touch-icon-precomposed.png" />
+    <Content Include="Views\Shared\apple-touch-icon.png" />
+    <Content Include="Views\Shared\favicon.ico" />
+    <Content Include="Views\Shared\loading.html" />
+    <Content Include="Views\Shared\logo.png" />
+    <Content Include="Views\Shared\static\css\jqm-docs.css" />
+    <Content Include="Views\Shared\static\css\jquery.mobile.css" />
+    <Content Include="Views\Shared\static\css\styles.css" />
+    <Content Include="Views\Shared\static\js\backbone-localstorage.js" />
+    <Content Include="Views\Shared\static\js\backbone-min.js" />
+    <Content Include="Views\Shared\static\js\backbone.js" />
+    <Content Include="Views\Shared\static\js\jquery.mobile.js" />
+    <Content Include="Views\Shared\static\js\json2.js" />
+    <Content Include="Views\Shared\static\js\underscore-min.js" />
+    <Content Include="Views\Shared\static\js\underscore.js" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\jquery-1.5.1-vsdoc.js" />
@@ -196,7 +196,7 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <Content Include="Views\Shared\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
