@@ -3,6 +3,7 @@
 [Oo]bj/
 [Bb]in/
 *.suo
+*.sln
 *.user
 /TestResults
 *.vspscc
