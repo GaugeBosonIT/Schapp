@@ -356,7 +356,7 @@
 				      var allLists = this.configStore.getAllLists();
 				      $.mobile.changePage($("#home"), { transition: "slide", changeHash: false, allowSamePageTransition: true, reverse: true, showLoadMsg: true });
 				    if (allLists.length) {
-				        this.$('#home-myLists').html("<h1>Your Lists</h1><ul data-role=\"listview\">" + _.map(allLists, this.list_template).join("") + "</ul>");
+				        this.$('#home-myLists').html("<h1>Your Lists</h1><ul data-role=\"listview\">" + _.map(allLists, this.list_template).join("") + "</ul>").trigger("create");
 				    } else {
 				        this.$('#home-myLists').html("");
 				    }
