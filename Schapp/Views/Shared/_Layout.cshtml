@@ -19,6 +19,7 @@
 	<script src="Scripts/schapp.js"></script>
 	<script src="Scripts/backbone-min.js"></script>
 	<script>
+	  var supportsTouch = 'createTouch' in document;
 	  $(function () {
 	    /* -------------------------------------------- ------ -------------------------------------------- */
 	    /* -------------------------------------------- MODELS -------------------------------------------- */
@@ -48,47 +49,47 @@
 	      }
 				, saveChanges: function () { this.save() }
 				, toJSON: function () {
-					var attrs = _.clone(this.attributes);
-					if (this._items.length) attrs['item'] = this._items.toJSON();
-					return attrs;
+				  var attrs = _.clone(this.attributes);
+				  if (this._items.length) attrs['item'] = this._items.toJSON();
+				  return attrs;
 				}
 				, parseItems: function (model, resp) {
-					model._items.reset(_.map(resp.item, function (e) { return new ShoppingItem(e) }));
-					App.configStore.addList(model.get("link"), model.get("name"));
-					return resp;
+				  model._items.reset(_.map(resp.item, function (e) { return new ShoppingItem(e) }));
+				  App.configStore.addList(model.get("link"), model.get("name"));
+				  return resp;
 				}
 				, url: function () {
-					var l = this.get('link');
-					return l ? '/api/lists/' + l : '/api/lists';
+				  var l = this.get('link');
+				  return l ? '/api/lists/' + l : '/api/lists';
 				}
 				, isNew: function () {
-					return this.get('link') == null;
+				  return this.get('link') == null;
 				}
 				, defaults: function () {
-					return {
-					  name: 'New List'
+				  return {
+				    name: 'New List'
 					, link: null
-					};
+				  };
 				}
 				, _m: null
 				, _in_waiting: false
 				, sync: function (method, model, options) {
-					var m = this, success = options.success,
+				  var m = this, success = options.success,
 						t = function () {
-							m._in_waiting = false;
-							if (m._m) {
-							  Backbone.sync(method, m._m, options);
-							} else return;
-							m._m = null;
+						  m._in_waiting = false;
+						  if (m._m) {
+						    Backbone.sync(method, m._m, options);
+						  } else return;
+						  m._m = null;
 						};
-					m._m = model;
-					if (method != 'update') {
-					  Backbone.sync(method, model, options);
-					} else {
-					  options.success = null;
-					  if (!m._in_waiting) { setTimeout(t, 500); m._in_waiting = true; }
-					  if (success) success(model, model);
-					}
+				  m._m = model;
+				  if (method != 'update') {
+				    Backbone.sync(method, model, options);
+				  } else {
+				    options.success = null;
+				    if (!m._in_waiting) { setTimeout(t, 500); m._in_waiting = true; }
+				    if (success) success(model, model);
+				  }
 				}
 	    });
 
@@ -288,22 +289,35 @@
 	    window.MainAppView = Backbone.View.extend({
 	      el: $("#homepage")
 					, list_template: _.template($('#homelist-template').html())
+          , current_page: 0
 					, events: {
 					  "keypress #new-slist-name": "createOnEnter"
 						, "click .button": "createOnClick"
 					}
 					, navigate_to: function (n) {
 					  window.scrollTo(0, 1);
+					  this.current_page = n;
+					  $(".container.current").removeClass("current").addClass("notcurrent");
+					  $($(".container").get(n)).addClass("current").show();
 					  $("#root").css("left", "-" + (n * 100) + "%");
 					}
+
+          , transEnd: function (e) {
+            $(".container.notcurrent").hide().removeClass("notcurrent");
+          }
           , show_loading: function () {
             $("body > .loading.hidden").removeClass("hidden");
           }
           , hide_loading: function () {
             $("body > .loading").addClass("hidden");
           }
+
 					, initialize: function () {
-					  _.each($(".container"), function (elem, i) { $(elem).attr("_pos", i).css("left", (i * 100) + "%") });
+					  _.each($(".container"), function (elem, i) { $(elem).attr("_pos", i).css("left", (i * 100) + "%"); if (i > 0) { $(elem).hide() } });
+					  $("#root").bind('webkitTransitionEnd', this.transEnd);
+					  $("#root").bind('transitionend', this.transEnd);
+					  $("#root").bind('oTransitionEnd', this.transEnd);
+
 					  this.input = $("#new-slist-name");
 
 					  this.configStore = {
@@ -395,7 +409,6 @@
 				  App.openList(link);
 				}
 				, resetView: function () {
-				  App.navigate_to(1);
 				  App.reset();
 				}
 				, sendEmail: function (link) {
