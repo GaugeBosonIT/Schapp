@@ -46,50 +46,50 @@
 	        this._items = new ShoppingItemList;
 	        this._items.bind('change', this.saveChanges, this);
 	      }
-					, saveChanges: function () { this.save() }
-					, toJSON: function () {
-					  var attrs = _.clone(this.attributes);
-					  if (this._items.length) attrs['item'] = this._items.toJSON();
-					  return attrs;
+				, saveChanges: function () { this.save() }
+				, toJSON: function () {
+					var attrs = _.clone(this.attributes);
+					if (this._items.length) attrs['item'] = this._items.toJSON();
+					return attrs;
+				}
+				, parseItems: function (model, resp) {
+					model._items.reset(_.map(resp.item, function (e) { return new ShoppingItem(e) }));
+					App.configStore.addList(model.get("link"), model.get("name"));
+					return resp;
+				}
+				, url: function () {
+					var l = this.get('link');
+					return l ? '/api/lists/' + l : '/api/lists';
+				}
+				, isNew: function () {
+					return this.get('link') == null;
+				}
+				, defaults: function () {
+					return {
+					  name: 'New List'
+					, link: null
+					};
+				}
+				, _m: null
+				, _in_waiting: false
+				, sync: function (method, model, options) {
+					var m = this, success = options.success,
+						t = function () {
+							m._in_waiting = false;
+							if (m._m) {
+							  Backbone.sync(method, m._m, options);
+							} else return;
+							m._m = null;
+						};
+					m._m = model;
+					if (method != 'update') {
+					  Backbone.sync(method, model, options);
+					} else {
+					  options.success = null;
+					  if (!m._in_waiting) { setTimeout(t, 500); m._in_waiting = true; }
+					  if (success) success(model, model);
 					}
-					, parseItems: function (model, resp) {
-					  model._items.reset(_.map(resp.item, function (e) { return new ShoppingItem(e) }));
-					  App.configStore.addList(model.get("link"), model.get("name"));
-					  return resp;
-					}
-					, url: function () {
-					  var l = this.get('link');
-					  return l ? '/api/lists/' + l : '/api/lists';
-					}
-					, isNew: function () {
-					  return this.get('link') == null;
-					}
-					, defaults: function () {
-					  return {
-					    name: 'New List'
-						, link: null
-					  };
-					}
-					, _m: null
-					, _in_waiting: false
-					, sync: function (method, model, options) {
-					  var m = this, success = options.success,
-							t = function () {
-							  m._in_waiting = false;
-							  if (m._m) {
-							    Backbone.sync(method, m._m, options);
-							  } else return;
-							  m._m = null;
-							};
-					  m._m = model;
-					  if (method != 'update') {
-					    Backbone.sync(method, model, options);
-					  } else {
-					    options.success = null;
-					    if (!m._in_waiting) { setTimeout(t, 500); m._in_waiting = true; }
-					    if (success) success(model, model);
-					  }
-					}
+				}
 	    });
 
 
@@ -295,7 +295,6 @@
 					, navigate_to: function (n) {
 					  window.scrollTo(0, 1);
 					  $("#root").css("left", "-" + (n * 100) + "%");
-					  $("#root").css("height", $(".container")[n].height()+"px");
 					}
           , show_loading: function () {
             $("body > .loading.hidden").removeClass("hidden");
