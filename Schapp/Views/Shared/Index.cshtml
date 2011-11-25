@@ -1,129 +1,131 @@
 ﻿<div class="loadingbackground hidden loading"></div>
 <div class="loading loadingpopup hidden" id="loading_popup">
-	loading, please wait...
+  loading, please wait...
 </div>
 
 <div id="root">
-<div class="container" id="splashscreen">
-	<div class="header"><h1>Presenting</h1></div>
-	<div class="content">Shapp</div>
-	<div class="footer">
-			shopping list app
-	</div>
+<div class="container active-page" id="splashscreen">
+  <div class="header clearfix"><h1>Presenting</h1></div>
+  <div class="content">Shapp</div>
+  <div class="footer">
+      shopping list app
+  </div>
 </div>
 
 <div id="homepage" data-title="Shapp - Create List"  class="container bodypage">
-	<div class="header"><h1>Create List</h1></div>
-	<div class="content" id="approot">
+  <div class="header clearfix"><h1>Create List</h1></div>
+  <div class="content" id="approot">
 
-		<div id="app-create-controls">
-			<div class="fieldcontain">
-				<label for="new-slist-name">List Name:</label>
-				<input type="text" name="list-name" placeholder="enter new list name here" id="new-slist-name" tabindex="1" required>
-				<label class="error hidden">You need to enter a list name!</label>
-			</div>
-			<div class="fieldcontain">
-				<input type="button" class="button" name="start" id="create-list" value="Create List" tabindex="2">
-			</div>
-		</div>
-		<div class="fieldcontain mylists" id="home-myLists"></div>
-	</div>
-	<div class="footer">
-			<div>shopping list app</div>
-	</div>
+    <div id="app-create-controls">
+      <div class="fieldcontain">
+        <label for="new-slist-name">List Name:</label>
+        <input type="text" name="list-name" id="new-slist-name" tabindex="1" required>
+        <div class="error invisible">You need to enter a list name!</div>
+      </div>
+      <div class="fieldcontain">
+        <input type="button" class="button" name="start" id="create-list" value="Create List" tabindex="2">
+      </div>
+    </div>
+    <div class="fieldcontain mylists" id="home-myLists"></div>
+  </div>
+  <div class="footer">
+      <div>shopping list app</div>
+  </div>
 </div>
 
 
 <div id="shoppingList-page" data-title="Shapp - Edit List"  class="container bodypage">
-	<div class="header">
-		<a href="#home" class="floatLeft navbutton">&laquo; back</a>
-		<a href="#" class="floatRight navbutton emailSender">send &raquo;</a>
-		<h1>Edit List!</h1>
-		
-	</div>
-	<div class="content" id="slist">
-		<div class="display">
-			<h2 class="list-name-text"></h2>
-		</div>
-		<div class="editor fieldcontain">
-			<input class="list-name-input" type="text" value="" />
-			<input class="list-name-input-confirm button" type="button" value="save" />
-		</div>
-		<div class="fieldcontain clearfix">
-			<input type="checkbox" id="toggleHideDone" class="toggleHideDone" checked/>
-			<label for="toggleHideDone">Hide Bought Items</label>
-		</div>
+  <div class="header clearfix">
+    <a href="#home" class="floatLeft navbutton">&laquo; back</a>
+    <a href="#" class="floatRight navbutton emailSender">send &raquo;</a>
+    <h1>Edit List!</h1>
+    
+  </div>
+  <div class="content" id="slist">
+    <div class="display">
+      <h2 class="list-name-text"></h2>
+    </div>
+    <div class="editor fieldcontain">
+      <input class="list-name-input" type="text" value="" />
+      <input class="list-name-input-confirm button" type="button" value="save" />
+    </div>
+    <div class="fieldcontain clearfix">
+      <input type="checkbox" id="toggleHideDone" class="toggleHideDone" checked/>
+      <label for="toggleHideDone">Hide Bought Items</label>
+    </div>
 
-		<ul id="shoppinglist-items" class="hideDone listview"></ul>
-			
-		<div class="item-add-fields">
-			<div class="fieldcontain">
-				<label for="list-item-input">New Item:</label>
-				<input class="list-item-input item-input-field" id="list-item-input" type="text" value="" _default="" />
-			</div>
-			<div class="fieldcontain">
-				<label for="list-qty-input">Quantity:</label>
-				<input class="list-qty-input item-input-field" id="list-qty-input" type="number" value="1" _default="1" />
-			</div>
-			<div class="fieldcontain">
-				<label for="list-price-input">Price:</label>
-				<input class="list-price-input item-input-field" id="list-price-input" type="number" value="0.0" _default="0.0" />
-			</div>
-			<input class="list-item-input-confirm button" type="button" value="add item" />
-		</div>
-	</div>
-	<div class="footer"><div>shopping list app</div></div>
+    <ul id="shoppinglist-items" class="hideDone listview"></ul>
+      
+    <div class="item-add-fields">
+      <div class="fieldcontain">
+        <label for="list-item-input">New Item:</label>
+        <input class="list-item-input item-input-field" id="list-item-input" type="text" value="" _default="" />
+      </div>
+      <div class="fieldcontain">
+        <label for="list-qty-input">Quantity:</label>
+        <input class="list-qty-input item-input-field" id="list-qty-input" type="number" value="1" _default="1" />
+      </div>
+      <div class="fieldcontain">
+        <label for="list-price-input">Price:</label>
+        <input class="list-price-input item-input-field" id="list-price-input" type="number" value="0.0" _default="0.0" />
+      </div>
+      <input class="list-item-input-confirm button" type="button" value="add item" />
+    </div>
+  </div>
+  <div class="footer"><div>shopping list app</div></div>
 </div>
 
 <div id="sendEmail-page" data-title="Shapp - Send List"  class="container bodypage">
-	<div class="header">
-		<a href="#"  class="floatLeft navbutton shoppingList-link">&laquo; back</a>
-		<h1>Send List!</h1>
-	</div>
-	<div class="content">
-		<form id="sendEmail-form">
-		<div class="fieldcontain">
-			<label for="email-input-field">Send to:</label>
-			<input class="input-field email-input-field" id="email-input-field" type="email" value="" _default="" required="true" />
+  <div class="header clearfix">
+    <a href="#"  class="floatLeft navbutton shoppingList-link">&laquo; back</a>
+    <h1>Send List!</h1>
+  </div>
+  <div class="content">
+    <form id="sendEmail-form">
+    <div class="fieldcontain">
+      <label for="email-input-field">Send to:</label>
+      <input class="input-field email-input-field" id="email-input-field" type="email" value="" _default="" required="true" />
       <label class="error hidden">Please enter a valid email address!</label>
-		</div>
-		<input class="email-input-confirm" type="button" value="send" />
-		</form>
-	</div>
-	<div class="footer"><div>shopping list app</div></div>
+    </div>
+    <input class="email-input-confirm" type="button" value="send" />
+    </form>
+  </div>
+  <div class="footer"><div>shopping list app</div></div>
 </div>
 </div>
+
+<!--<a class="listbutton dragitem first"><span class="movearrow down">&#x25bc;</span><span class="movearrow up">&#x25b2;</span>
+  </a>-->
 
 <script type="text/template" id="item-template">
-  <a class="listbutton first checkitem">
+  <a class="listbutton checkitem">
     <span class="label"><%= quantity %> x <%= name %><% if (price!=0) { %> for <% print(parseFloat(price).toFixed(2)); %><% } %></span>
-  </a>
-  <a class="listbutton last edititem">
-    <span class="darrow">&#x25bc;</span>
+  </a><a class="listbutton last edititem">
+    <span class="darrow">edit</span>
   </a>
 
-	<div class="hidden editFields" >
-		<div class="fieldcontain">
-			<label for="list-item-input-<%= id %>">Item:</label>
-			<input class="item-name-input item-input-field" id="list-item-input-<%= id %>" type="text" value="<%= name %>" _default="<%= name %>" />
-		</div>
-		<div class="fieldcontain">
-			<label for="list-qty-input-<%= id %>">Quantity:</label>
-			<input class="item-qty-input item-input-field" id="list-qty-input-<%= id %>" type="number" value="<%= quantity %>" _default="1" />
-		</div>
-		<div class="fieldcontain">
-			<label for="list-price-input-<%= id %>">Price:</label>
-			<input class="item-price-input item-input-field" id="list-price-input-<%= id %>" type="number" value="<% print(parseFloat(price).toFixed(2)); %>" _default="0.0" />
-		</div>
-		<div>
-			<input type="button" class="button first item-save-confirm item-change-button" value="save">
-			<input type="button" class="button last item-delete-confirm item-change-button last" value="delete">
-		</div>
-	</div>
+  <div class="hidden editFields" >
+    <div class="fieldcontain">
+      <label for="list-item-input-<%= id %>">Item:</label>
+      <input class="item-name-input item-input-field" id="list-item-input-<%= id %>" type="text" value="<%= _.escape(name) %>" _default="<%= _.escape(name) %>" />
+    </div>
+    <div class="fieldcontain">
+      <label for="list-qty-input-<%= id %>">Quantity:</label>
+      <input class="item-qty-input item-input-field" id="list-qty-input-<%= id %>" type="number" value="<%= _.escape(quantity) %>" _default="1" />
+    </div>
+    <div class="fieldcontain">
+      <label for="list-price-input-<%= id %>">Price:</label>
+      <input class="item-price-input item-input-field" id="list-price-input-<%= id %>" type="number" value="<% print(parseFloat(price).toFixed(2)); %>" _default="<% print(parseFloat(price).toFixed(2)); %>" />
+    </div>
+    <div>
+      <input type="button" class="button first item-save-confirm item-change-button" value="save">
+      <input type="button" class="button last item-delete-confirm item-change-button last" value="delete">
+    </div>
+  </div>
 
 </script>
 <script type="text/template" id="homelist-template">
-	<li><a href="#list/<%= link %>" class="first last"><span class="label"><%= name %></span><span class="rarrow">&raquo</span></a></li>
+  <li><a class="dellist listbutton first"><span _link="<%= link %>" class="dellist label">del</span></a><a href="#list/<%= link %>" class="checkitem listbutton last"><span class="label listname"><%= name %></span><span class="rarrow">&raquo</span></a></li>
 </script>
 
 

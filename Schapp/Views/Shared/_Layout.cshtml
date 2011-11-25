@@ -1,427 +1,53 @@
 ﻿<!doctype html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<title>Schapp</title>
-	<meta name="Generator" content="GaugeIt" />
-	<meta name="viewport" content="width=device-width, user-scalable = no, initial-scale=1">
-	<meta name="MobileOptimized" content="width">
-	<meta name="HandheldFriendly" content="true">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta http-equiv="cleartype" content="on">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<link rel="shortcut icon" href="static/favicon.ico">
-	<link rel="apple-touch-icon" href="static/apple-touch-icon.png">
-	<link rel="stylesheet" href="Content/Site.css" />
-	</head>
+  <meta charset="utf-8">
+  <title>Schapp</title>
+  <meta name="Generator" content="GaugeIt" />
+  <meta name="viewport" content="width=device-width, user-scalable = no, initial-scale=1">
+  <meta name="MobileOptimized" content="width">
+  <meta name="HandheldFriendly" content="true">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="cleartype" content="on">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <link rel="shortcut icon" href="static/favicon.ico">
+  <link rel="apple-touch-icon" href="static/apple-touch-icon.png">
+  <link rel="stylesheet" href="Content/Site.css" />
+  </head>
 <body class="notready">
-	@RenderBody()
-	<script src="Scripts/schapp.js"></script>
-	<script src="Scripts/backbone-min.js"></script>
-	<script>
-	  var supportsTouch = 'createTouch' in document;
-	  $(function () {
-	    /* -------------------------------------------- ------ -------------------------------------------- */
-	    /* -------------------------------------------- MODELS -------------------------------------------- */
-	    /* -------------------------------------------- ------ -------------------------------------------- */
-	    window.SendModel = Backbone.Model.extend({
-	      defaults: function () {
-	        return { email: null, link: null };
-	      }
-					, url: function () { return '/api/lists/send'; }
-	    });
-
-	    window.ShoppingItem = Backbone.Model.extend({
-	      defaults: function () {
-	        return { name: 'New Item', price: 0.0, shop: "New Shop", quantity: 1, id: Math.random(), done: false };
-	      }
-				, validate: function (params) {
-				  if (params.price && isNaN(params.price)) return "Price needs to be a valid number";
-				  if (params.quantity && isNaN(params.quantity)) return "Quantity needs to be avalid number";
-				}
-				, sync: function (method, model, options) { options.success(); }
-	    });
-	    window.ShoppingItemList = Backbone.Collection.extend({ model: ShoppingItem });
-	    window.ShoppingList = Backbone.Model.extend({
-	      initialize: function () {
-	        this._items = new ShoppingItemList;
-	        this._items.bind('change', this.saveChanges, this);
-	      }
-				, saveChanges: function () { this.save() }
-				, toJSON: function () {
-				  var attrs = _.clone(this.attributes);
-				  if (this._items.length) attrs['item'] = this._items.toJSON();
-				  return attrs;
-				}
-				, parseItems: function (model, resp) {
-				  model._items.reset(_.map(resp.item, function (e) { return new ShoppingItem(e) }));
-				  App.configStore.addList(model.get("link"), model.get("name"));
-				  return resp;
-				}
-				, url: function () {
-				  var l = this.get('link');
-				  return l ? '/api/lists/' + l : '/api/lists';
-				}
-				, isNew: function () {
-				  return this.get('link') == null;
-				}
-				, defaults: function () {
-				  return {
-				    name: 'New List'
-					, link: null
-				  };
-				}
-				, _m: null
-				, _in_waiting: false
-				, sync: function (method, model, options) {
-				  var m = this, success = options.success,
-						t = function () {
-						  m._in_waiting = false;
-						  if (m._m) {
-						    Backbone.sync(method, m._m, options);
-						  } else return;
-						  m._m = null;
-						};
-				  m._m = model;
-				  if (method != 'update') {
-				    Backbone.sync(method, model, options);
-				  } else {
-				    options.success = null;
-				    if (!m._in_waiting) { setTimeout(t, 500); m._in_waiting = true; }
-				    if (success) success(model, model);
-				  }
-				}
-	    });
-
-
-	    /* -------------------------------------------- ----- -------------------------------------------- */
-	    /* -------------------------------------------- VIEWS -------------------------------------------- */
-	    /* -------------------------------------------- ----- -------------------------------------------- */
-
-	    window.ShoppingItemView = Backbone.View.extend({
-	      tagName: "li"
-					, template: _.template($('#item-template').html())
-					, events: {
-					  "click .checkitem": "toggleDone"
-						, "click .edititem": "toggleEdit"
-						, "click .item-delete-confirm": "deleteItem"
-						, "click .item-save-confirm": "saveItem"
-					}
-					, initialize: function () {
-					}
-					, saveItem: function () {
-					  this.model.set({ "name": this.$(".item-name-input").val(), "price": this.$(".item-price-input").val(), "quantity": this.$(".item-qty-input").val() });
-					  $(this.render().el).trigger("create");
-					}
-					, deleteItem: function () {
-					  if (confirm("Really delete '" + this.model.get("name") + "'?")) {
-					    this.model.destroy();
-					    this.remove();
-					  }
-					}
-					, closeEdit: function () {
-					  this.$('.editFields').addClass('hidden');
-					  this.$('.edititem .darrow').html('&#x25bc;');
-					}
-					, openEdit: function () {
-					  this.$('.editFields').removeClass('hidden');
-					  this.$('.edititem .darrow').html('&#x25b2;');
-					}
-					, toggleEdit: function (e) {
-					  if (this.$('.editFields').hasClass('hidden')) {
-					    this.openEdit();
-					  } else {
-					    this.closeEdit();
-					  }
-					}
-					, toggleDone: function (e) {
-					  if (!this.model.get("done")) {
-					    $(this.el).addClass("done");
-					    this.$('.checkitem').addClass('ui-btn-active');
-					    this.closeEdit();
-					  } else {
-					    $(this.el).removeClass("done");
-					    this.$('.checkitem').removeClass('ui-btn-active');
-					  }
-					  this.model.set({ "done": !this.model.get("done") });
-					}
-					, render: function () {
-					  $(this.el).html(this.template(this.model.toJSON()));
-					  if (this.model.get("done")) { $(this.el).addClass("done"); }
-					  return this;
-					}
-	    });
-
-
-	    window.SendView = Backbone.View.extend({
-	      el: $('#sendEmail-page')
-					, events: {
-					  "click .email-input-confirm": "sendOnClick"
-						, "keypress .email-input-field": "sendOnEnter"
-					}
-					, initialize: function () {
-					  this.input = this.$('.email-input-field');
-					}
-					, render: function () {
-					  this.$(".shoppingList-link").attr("href", "#list/" + this.model.get('link'));
-					}
-					, sendOnClick: function (e) { return this.sendOn(e, function (e) { return false; }); }
-					, sendOnEnter: function (e) { return this.sendOn(e, function (e) { return e.keyCode != 13; }); }
-					, sendOn: function (e, filter) {
-					  var email = this.input.val(), olink = this.model.get('link'), view = this;
-					  if (filter(e)) return;
-					  if (!/^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i.test(email)) {
-					    this.$(".error").removeClass("hidden");
-					  } else {
-					    this.$(".error").addClass("hidden");
-					    App.show_loading();
-					    this.model.save({ email: email, link: document.location.href.replace('send', 'list') }
-						  , {
-						    error: function (model, error) {
-						      alert(error);
-						      App.hide_loading();
-						    }
-							  , success: function () {
-							    App.hide_loading();
-							    view.tearDown();
-							    listRouter.navigate("list/" + olink, true);
-							  }
-						  });
-					  }
-					}
-					, tearDown: function () {
-					  this.model.unbind();
-					  this.$(".shoppingList-link").unbind();
-					  this.el.unbind();
-					}
-	    });
-
-
-	    window.ShoppingListView = Backbone.View.extend({
-	      el: $('#shoppingList-page')
-					, events: {
-					  "click .list-name-text": "edit"
-						, "click .list-name-input-confirm": "close"
-						, "keypress .list-item-input": "addOnEnter"
-						, "click .list-item-input-confirm": "addOnClick"
-						, "click .toggleHideDone": "toggleHideDone"
-					}
-					, initialize: function () {
-					  this.nameinput = this.$('.list-name-input');
-					  this.addinput = this.$('.list-item-input');
-					  this.nameinput.bind('blur', _.bind(this.close, this));
-					  this.model._items.bind('add', this.addOne, this);
-					  this.model._items.bind('reset', this.addAll, this);
-					  this.model._items.bind('destroy', this.removeItem, this);
-					}
-					, removeItem: function (model) {
-					  this.model._items.remove(model);
-					  this.model.save();
-					}
-					, toggleHideDone: function () {
-					  $("#shoppinglist-items").toggleClass("hideDone");
-					}
-					, render: function () {
-					  if (this.model.hasChanged('link')) {
-					    listRouter.navigate("list/" + this.model.get('link'));
-					  }
-					  this.$(".emailSender").attr('href', "#send/" + this.model.get('link'));
-					  var text = this.model.get('name');
-					  this.$('.list-name-text').text(text);
-					  this.nameinput.val(text);
-					  this.addinput.val('');
-					  App.navigate_to(2);
-					  return this.el;
-					}
-					, edit: function () {
-					  $(this.el).addClass("editing");
-					  this.nameinput.focus();
-					}
-					, close: function () {
-					  this.model.save({ name: this.nameinput.val() });
-					  $(this.el).removeClass("editing");
-					}
-					, updateOnEnter: function (e) {
-					  if (e.keyCode == 13) this.close();
-					}
-					, addOne: function (item) {
-					  var view = new ShoppingItemView({ model: item });
-					  $("#shoppinglist-items").append(view.render().el);
-					}
-					, addAll: function () {
-					  var widgetlist = [];
-					  this.model._items.each(function (item) { widgetlist.push(new ShoppingItemView({ model: item }).render().el); });
-					  $("#shoppinglist-items").html(widgetlist);
-					}
-					, addOnClick: function (e) { return this.addOn(e, function (e) { return false; }); }
-					, addOnEnter: function (e) { return this.addOn(e, function (e) { return e.keyCode != 13; }); }
-					, addOn: function (e, filter) {
-					  var name = this.addinput.val(), view = this;
-					  if (!name || filter(e)) return;
-					  this.model._items.create(
-						{ name: name, price: this.$('.list-price-input').val(), quantity: this.$('.list-qty-input').val() }
-						, {
-						  error: function (model, error) {
-						    alert(error);
-						  }
-							, success: function () {
-							  view.model.save();
-							  view.$('.item-input-field').each(function (i, elem) { elem = $(elem); elem.val(elem.attr("_default") || ""); });
-							}
-						}
-					);
-					}
-					, tearDown: function () {
-					  this.model._items.unbind();
-					  this.model.unbind();
-					  this.nameinput.unbind();
-					  this.el.unbind();
-					  this.$("input.toggleHideDone").unbind();
-					  delete this.model._items;
-					  $("#shoppinglist-items").empty();
-					}
-	    });
-
-	    /* -------------------------------------------- --- -------------------------------------------- */
-	    /* -------------------------------------------- APP -------------------------------------------- */
-	    /* -------------------------------------------- --- -------------------------------------------- */
-
-	    window.MainAppView = Backbone.View.extend({
-	      el: $("#homepage")
-					, list_template: _.template($('#homelist-template').html())
-          , current_page: 0
-					, events: {
-					  "keypress #new-slist-name": "createOnEnter"
-						, "click .button": "createOnClick"
-					}
-					, navigate_to: function (n) {
-					  window.scrollTo(0, 1);
-					  this.current_page = n;
-					  $(".container.current").removeClass("current").addClass("notcurrent");
-					  $($(".container").get(n)).addClass("current").show();
-					  $("#root").css("left", "-" + (n * 100) + "%");
-					}
-
-          , transEnd: function (e) {
-            $(".container.notcurrent").hide().removeClass("notcurrent");
+  @RenderBody()
+  <script>/*yepnope1.0.2|WTFPL*/(function(a,b,c){function H(){var a=z;a.loader={load:G,i:0};return a}function G(a,b,c){var e=b=="c"?r:q;i=0,b=b||"j",u(a)?F(e,a,b,this.i++,d,c):(h.splice(this.i++,0,a),h.length==1&&E());return this}function F(a,c,d,g,j,l){function q(){!o&&A(n.readyState)&&(p.r=o=1,!i&&B(),n.onload=n.onreadystatechange=null,e(function(){m.removeChild(n)},0))}var n=b.createElement(a),o=0,p={t:d,s:c,e:l};n.src=n.data=c,!k&&(n.style.display="none"),n.width=n.height="0",a!="object"&&(n.type=d),n.onload=n.onreadystatechange=q,a=="img"?n.onerror=q:a=="script"&&(n.onerror=function(){p.e=p.r=1,E()}),h.splice(g,0,p),m.insertBefore(n,k?null:f),e(function(){o||(m.removeChild(n),p.r=p.e=o=1,B())},z.errorTimeout)}function E(){var a=h.shift();i=1,a?a.t?e(function(){a.t=="c"?D(a):C(a)},0):(a(),B()):i=0}function D(a){var c=b.createElement("link"),d;c.href=a.s,c.rel="stylesheet",c.type="text/css";if(!a.e&&(o||j)){var g=function(a){e(function(){if(!d)try{a.sheet.cssRules.length?(d=1,B()):g(a)}catch(b){b.code==1e3||b.message=="security"||b.message=="denied"?(d=1,e(function(){B()},0)):g(a)}},0)};g(c)}else c.onload=function(){d||(d=1,e(function(){B()},0))},a.e&&c.onload();e(function(){d||(d=1,B())},z.errorTimeout),!a.e&&f.parentNode.insertBefore(c,f)}function C(a){var c=b.createElement("script"),d;c.src=a.s,c.onreadystatechange=c.onload=function(){!d&&A(c.readyState)&&(d=1,B(),c.onload=c.onreadystatechange=null)},e(function(){d||(d=1,B())},z.errorTimeout),a.e?c.onload():f.parentNode.insertBefore(c,f)}function B(){var a=1,b=-1;while(h.length- ++b)if(h[b].s&&!(a=h[b].r))break;a&&E()}function A(a){return!a||a=="loaded"||a=="complete"}var d=b.documentElement,e=a.setTimeout,f=b.getElementsByTagName("script")[0],g={}.toString,h=[],i=0,j="MozAppearance"in d.style,k=j&&!!b.createRange().compareNode,l=j&&!k,m=k?d:f.parentNode,n=a.opera&&g.call(a.opera)=="[object Opera]",o="webkitAppearance"in d.style,p=o&&"async"in b.createElement("script"),q=j?"object":n||p?"img":"script",r=o?"img":q,s=Array.isArray||function(a){return g.call(a)=="[object Array]"},t=function(a){return Object(a)===a},u=function(a){return typeof a=="string"},v=function(a){return g.call(a)=="[object Function]"},w=[],x={},y,z;z=function(a){function h(a,b){function i(a){if(u(a))g(a,f,b,0,c);else if(t(a))for(h in a)a.hasOwnProperty(h)&&g(a[h],f,b,h,c)}var c=!!a.test,d=c?a.yep:a.nope,e=a.load||a.both,f=a.callback,h;i(d),i(e),a.complete&&b.load(a.complete)}function g(a,b,d,e,g){var h=f(a),i=h.autoCallback;if(!h.bypass){b&&(b=v(b)?b:b[a]||b[e]||b[a.split("/").pop().split("?")[0]]);if(h.instead)return h.instead(a,b,d,e,g);d.load(h.url,h.forceCSS||!h.forceJS&&/css$/.test(h.url)?"c":c,h.noexec),(v(b)||v(i))&&d.load(function(){H(),b&&b(h.origUrl,g,e),i&&i(h.origUrl,g,e)})}}function f(a){var b=a.split("!"),c=w.length,d=b.pop(),e=b.length,f={url:d,origUrl:d,prefixes:b},g,h;for(h=0;h<e;h++)g=x[b[h]],g&&(f=g(f));for(h=0;h<c;h++)f=w[h](f);return f}var b,d,e=this.yepnope.loader;if(u(a))g(a,0,e,0);else if(s(a))for(b=0;b<a.length;b++)d=a[b],u(d)?g(d,0,e,0):s(d)?z(d):t(d)&&h(d,e);else t(a)&&h(a,e)},z.addPrefix=function(a,b){x[a]=b},z.addFilter=function(a){w.push(a)},z.errorTimeout=1e4,b.readyState==null&&b.addEventListener&&(b.readyState="loading",b.addEventListener("DOMContentLoaded",y=function(){b.removeEventListener("DOMContentLoaded",y,0),b.readyState="complete"},0)),a.yepnope=H()})(this,this.document)</script>
+  <script>
+    /* -------------------------------------------- --------------- -------------------------------------------- */
+    /* -------------------------------------------- BROWSER SUPPORT -------------------------------------------- */
+    /* -------------------------------------------- --------------- -------------------------------------------- */
+    var support = {}, mod = 'modernizr'
+      , modElem = document.createElement(mod)
+      , mStyle = modElem.style
+      , domPrefixes = 'Webkit Moz O ms Khtml'.split(' ')
+      , testProps = function (props, prefixed) {
+        for (var i in props) {
+          if (mStyle[props[i]] !== undefined) {
+            return prefixed == 'pfx' ? props[i] : true;
           }
-          , show_loading: function () {
-            $("body > .loading.hidden").removeClass("hidden");
-          }
-          , hide_loading: function () {
-            $("body > .loading").addClass("hidden");
-          }
+        }
+        return false;
+      }
+      , testPropsAll = function (prop, prefixed) {
+        var ucProp = prop.charAt(0).toUpperCase() + prop.substr(1),
+        props = (prop + ' ' + domPrefixes.join(ucProp + ' ') + ucProp).split(' ');
+        return testProps(props, prefixed);
+      };
+      support['supportsTouch'] = 'createTouch' in document;
+      support['cssTransitions'] = testPropsAll('transitionProperty');
 
-					, initialize: function () {
-					  _.each($(".container"), function (elem, i) { $(elem).attr("_pos", i).css("left", (i * 100) + "%"); if (i > 0) { $(elem).hide() } });
-					  $("#root").bind('webkitTransitionEnd', this.transEnd);
-					  $("#root").bind('transitionend', this.transEnd);
-					  $("#root").bind('oTransitionEnd', this.transEnd);
+      yepnope({
+        test: support['cssTransitions'],
+        yep: 'Scripts/scripts/tools.js',
+        nope: 'Scripts/scripts/tools.ie.js',
+        both: ['Scripts/backbone-min.js','Scripts/scripts/configStore.js', 'Scripts/shapp.js']
+      });
 
-					  this.input = $("#new-slist-name");
-
-					  this.configStore = {
-					    key: "configStore"
-							, save: function (data) {
-							  localStorage.setItem(this.key, JSON.stringify(data))
-							}
-							, get: function () {
-							  return JSON.parse(localStorage.getItem(this.key) || "{}");
-							}
-							, addList: function (link, name) {
-							  var config = this.get();
-							  config.unique_hash = config.unique_hash || {};
-							  if (config.unique_hash[link]) {
-							    return;
-							  } else {
-							    config.lists = config.lists || []
-							    config.lists.unshift({ link: link, name: name });
-							    config.unique_hash[link] = true;
-							    this.save(config);
-							  }
-							}
-							, getAllLists: function () {
-							  return (this.get('config') || {}).lists || [];
-							}
-					  }
-					}
-					, render: function () {
-					  this.navigate_to(1);
-					}
-					, reset: function () {
-					  var allLists = this.configStore.getAllLists();
-					  if (allLists.length && !this.$('#home-myLists').hasClass("rendered")) {
-					    this.$('#home-myLists').html("<h1>Your Lists</h1><ul class=\"listview\">" + _.map(allLists, this.list_template).join("") + "</ul>");
-					    this.$('#home-myLists').addClass("rendered");
-					  }
-					  this.input.val('');
-					  this.render();
-					}
-					, createOnClick: function (e) { return this.createOn(e, function (e) { return false; }); }
-					, createOnEnter: function (e) { return this.createOn(e, function (e) { return e.keyCode != 13; }); }
-					, createOn: function (e, filter) {
-					  var text = this.input.val(), view = this;
-					  if (!text || filter(e)) {
-					    this.$(".error").removeClass("hidden");
-					    return;
-					  }
-					  if (this.shoppinglist_view) { this.shoppinglist_view.tearDown(); }
-					  this.shoppinglist_view = new ShoppingListView({ model: new ShoppingList({ name: text }) });
-					  this.shoppinglist_view.model.bind('change', this.shoppinglist_view.render, this.shoppinglist_view);
-					  this.shoppinglist_view.model.save({}, { success:
-							function (model) {
-							  view.configStore.addList(model.get("link"), model.get("name"));
-							  this.$(".error").addClass("hidden");
-							}
-					  });
-					}
-					, openList: function (link) {
-					  if (this.shoppinglist_view) {
-					    if (this.shoppinglist_view.model.get("link") !== link) {
-					      this.shoppinglist_view.tearDown();
-					    } else {
-					      App.navigate_to(2);
-					      return;
-					    }
-					  }
-					  this.shoppinglist_view = new ShoppingListView({ model: new ShoppingList({ 'link': link }) });
-					  this.shoppinglist_view.model.bind('change', this.shoppinglist_view.render, this.shoppinglist_view);
-					  this.shoppinglist_view.model.fetch({ success: this.shoppinglist_view.model.parseItems });
-					}
-					, sendEmail: function (link) {
-					  if (!this.shoppinglist_view) {
-					    listRouter.navigate("list/" + link);
-					    this.openList(link);
-					  }
-					  this.send_view = new SendView({ model: new SendModel({ 'link': link }) });
-					  this.send_view.render();
-					}
-	    });
-	    window.App = new MainAppView();
-
-	    ListRouter = Backbone.Router.extend({
-	      routes: { "home": "resetView"
-						, "send/:link": "sendEmail"
-						, "list/:link": "openList"
-						, "*other": "resetView"
-	      }
-				, openList: function (link) {
-				  App.openList(link);
-				}
-				, resetView: function () {
-				  App.reset();
-				}
-				, sendEmail: function (link) {
-				  App.navigate_to(3);
-				  App.sendEmail(link);
-				}
-	    });
-	    listRouter = new ListRouter;
-	    Backbone.history.start();
-	  });
-	</script>
-
-
-
+  </script>
 </body>
 </html>

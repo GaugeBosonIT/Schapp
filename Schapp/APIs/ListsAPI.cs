@@ -2,7 +2,6 @@
 using System.ServiceModel.Web;
 using Schapp.Models;
 using System.Collections.Generic;
-using Schapp.Models;
 using Schapp.DataAccess;
 using System.IO;
 using System.Runtime.Serialization;
