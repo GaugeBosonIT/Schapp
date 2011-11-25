@@ -18,7 +18,7 @@ namespace AudioTag
             //act
             var i = c.Index();
             //assert
-            Assert.AreEqual("", "", "Index view wrongly named");
+            Assert.AreEqual("xzcv", "", "Index view wrongly named");
 
 
 
