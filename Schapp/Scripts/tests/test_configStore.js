@@ -46,3 +46,13 @@ TestCase("configStoreTest", {
     assertEquals(2, this.store.getAllLists().length);
   }
 });
+
+
+TestCase("emailRegExpTester", {
+  "test simpleemails": function () {
+    assertTrue(window.tools.isEmail("abc@abc.com"));
+    assertTrue(window.tools.isEmail("abc@welcome-mars.it"));
+    assertTrue(window.tools.isEmail("m_m.M-m@m.it"));
+    assertFalse(window.tools.isEmail("m_m.M-m@.it"));
+  }
+});
