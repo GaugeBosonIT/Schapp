@@ -161,11 +161,11 @@
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="logo.png" />
-    <Content Include="Scripts\backbone-min.js" />
+    <Content Include="Scripts\scripts\backbone-min.js" />
     <Content Include="Scripts\scripts\configStore.js" />
+    <Content Include="Scripts\scripts\shapp.js" />
     <Content Include="Scripts\scripts\tools.ie.js" />
     <Content Include="Scripts\scripts\tools.js" />
-    <Content Include="Scripts\shapp.js" />
     <Content Include="Scripts\tests\test_configStore.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
