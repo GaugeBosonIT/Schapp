@@ -8,18 +8,18 @@
     defaults: function () {
       return { email: null, link: null };
     }
-          , url: function () { return '/api/lists/send'; }
+    , url: function () { return '/api/lists/send'; }
   });
 
   window.ShoppingItem = Backbone.Model.extend({
     defaults: function () {
       return { name: 'New Item', price: 0.0, shop: "New Shop", quantity: 1, id: Math.random(), done: false };
     }
-        , validate: function (params) {
-          if (params.price && isNaN(params.price)) return "Price needs to be a valid number";
-          if (params.quantity && isNaN(params.quantity)) return "Quantity needs to be a valid number";
-        }
-        , sync: function (method, model, options) { options.success(); }
+    , validate: function (params) {
+      if (params.price && isNaN(params.price)) return "Price needs to be a valid number";
+      if (params.quantity && isNaN(params.quantity)) return "Quantity needs to be a valid number";
+    }
+    , sync: function (method, model, options) { options.success(); }
   });
   window.ShoppingItemList = Backbone.Collection.extend({ model: ShoppingItem });
   window.ShoppingList = Backbone.Model.extend({
